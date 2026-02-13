@@ -3,88 +3,103 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trend Electro — Магазин</title>
+    <title>Trend Electro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
-        body { font-family: 'Inter', sans-serif; background: #f8fafc; }
-        .product-card { background: white; border-radius: 20px; border: 1px solid #e2e8f0; transition: 0.3s; display: flex; flex-direction: column; }
-        .product-card:hover { border-color: #fbbf24; transform: translateY(-2px); shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
-        .category-btn.active { background: #fbbf24; color: black; }
+        body { font-family: 'Inter', sans-serif; background: #f8fafc; padding-bottom: 80px; }
+        .product-card { background: white; border-radius: 20px; border: 1px solid #e2e8f0; display: flex; flex-direction: column; transition: 0.3s; }
+        .product-card:hover { border-color: #fbbf24; transform: translateY(-3px); }
     </style>
 </head>
 <body class="text-slate-900">
 
 <header class="bg-white border-b sticky top-0 z-50 p-4 shadow-sm">
-    <div class="container mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
-        <h1 class="text-2xl font-black uppercase italic italic">Trend <span class="text-yellow-500">Electro</span></h1>
-        <div class="relative w-full max-w-md">
-            <input type="text" id="searchInput" oninput="render()" placeholder="Пошук за назвою або кодом..." class="w-full bg-slate-100 border-none rounded-xl py-2 px-4 outline-none focus:ring-2 focus:ring-yellow-400">
-        </div>
-        <div class="bg-slate-900 text-white px-6 py-2 rounded-xl flex items-center gap-3">
-            <i class="fas fa-shopping-cart text-yellow-400"></i>
+    <div class="container mx-auto flex justify-between items-center">
+        <h1 class="text-xl font-black uppercase italic italic">Trend <span class="text-yellow-500">Electro</span></h1>
+        <button onclick="toggleCart()" class="bg-slate-900 text-white px-6 py-2 rounded-xl flex items-center gap-3">
+            <i class="fas fa-shopping-basket text-yellow-400"></i>
             <span id="cartCount" class="font-bold">0</span>
-        </div>
+        </button>
     </div>
 </header>
 
 <main class="container mx-auto px-4 py-8">
-    <div id="grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        </div>
+    <div id="grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
 </main>
 
-<script>
-    const MARKUP = 1.5; // Твоя націнка 50%
+<div id="cartModal" class="fixed inset-0 bg-black/60 z-[100] hidden flex justify-end">
+    <div class="bg-white w-full max-w-md h-full p-8 flex flex-col shadow-2xl">
+        <h2 class="text-2xl font-black mb-6 italic uppercase">Кошик</h2>
+        <div id="cartItems" class="flex-1 overflow-y-auto space-y-4"></div>
+        <div class="pt-6 border-t mt-6">
+            <input type="text" id="uPhone" placeholder="Ваш телефон" class="w-full p-4 bg-slate-100 rounded-xl mb-4 text-center text-lg font-bold outline-none border-2 border-transparent focus:border-yellow-400">
+            <button onclick="sendOrder()" class="w-full bg-slate-900 text-white py-5 rounded-xl font-black uppercase tracking-widest active:scale-95 transition">Замовити ⚡️</button>
+        </div>
+    </div>
+</div>
 
-    // Основні товари з твого прайсу (додав частину для старту)
-    const rawProducts = [
-        {sku:"11-11-14", name:"LED лампа LEBRON L-A60, 8W, Е27, 4100K", inPrice: 27, stock: "0"},
-        {sku:"11-11-17-1", name:"LED лампа LEBRON L-A60, 8W, Е27, 3000K", inPrice: 27, stock: "10"},
-        {sku:"11-11-31-1", name:"LED лампа LEBRON L-A60, 10W, Е27, 3000K", inPrice: 31.2, stock: "10"},
-        {sku:"13-14-32", name:"Прожектор LED LEBRON L-LF, 30W, 4100K", inPrice: 183, stock: "10"},
-        {sku:"89-99-23", name:"Електрофумігатор НЕКУСАЙКА з блістером", inPrice: 46.8, stock: "10"},
-        {sku:"89-99-28", name:"Комплект НЕКУСАЙКА (прилад + рідина)", inPrice: 96.3, stock: "10"},
-        {sku:"75-90-50", name:"Масляний фільтр GUCBIR OF-1", inPrice: 120, stock: "10"}
+<script>
+    const MARKUP = 1.5;
+    const rawData = [
+        {sku:"11-11-17-1", name:"LED лампа LEBRON L-A60, 8W, Е27, 3000K", in:27},
+        {sku:"11-11-31-1", name:"LED лампа LEBRON L-A60, 10W, Е27, 3000K", in:31.2},
+        {sku:"13-14-32", name:"Прожектор LED LEBRON L-LF-3041, 30W", in:183},
+        {sku:"89-99-23", name:"Електрофумігатор НЕКУСАЙКА з блістером", in:46.8},
+        {sku:"89-99-28", name:"Комплект: прилад + рідина НЕКУСАЙКА", in:96.3},
+        {sku:"75-90-50", name:"Масляний фільтр GUCBIR OF-1", in:120}
     ];
 
-    const products = rawProducts.map(p => ({
-        ...p,
-        price: Math.round(p.inPrice * MARKUP),
-        avail: p.stock !== "0"
-    }));
-
+    const products = rawData.map(p => ({ ...p, price: Math.round(p.in * MARKUP) }));
     let cart = [];
 
     function render() {
-        const query = document.getElementById('searchInput').value.toLowerCase();
         const grid = document.getElementById('grid');
-        
-        const filtered = products.filter(p => 
-            p.name.toLowerCase().includes(query) || p.sku.toLowerCase().includes(query)
-        );
-
-        grid.innerHTML = filtered.map(p => `
-            <div class="product-card p-5 ${!p.avail ? 'opacity-50' : ''}">
-                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">${p.sku}</span>
-                <h3 class="font-bold text-sm h-12 overflow-hidden my-3 leading-tight">${p.name}</h3>
-                <div class="flex justify-between items-center mt-auto pt-4 border-t border-slate-50">
-                    <span class="text-xl font-black">${p.avail ? p.price + ' грн' : 'Немає'}</span>
-                    ${p.avail ? `
-                        <button onclick="addToCart('${p.sku}')" class="bg-yellow-400 hover:bg-black hover:text-white w-10 h-10 rounded-xl transition flex items-center justify-center">
-                            <i class="fas fa-plus"></i>
-                        </button>
-                    ` : ''}
+        grid.innerHTML = products.map(p => `
+            <div class="product-card p-6">
+                <span class="text-[10px] font-bold text-slate-300 uppercase mb-2 block">${p.sku}</span>
+                <h3 class="font-bold text-sm h-12 mb-4 leading-tight">${p.name}</h3>
+                <div class="flex justify-between items-center pt-4 border-t">
+                    <span class="text-xl font-black">${p.price} грн</span>
+                    <button onclick="addToCart('${p.sku}')" class="bg-yellow-400 w-10 h-10 rounded-xl flex items-center justify-center shadow-lg active:scale-90 transition"><i class="fas fa-plus"></i></button>
                 </div>
             </div>
         `).join('');
     }
 
-    function addToCart(sku) {
-        const p = products.find(x => x.sku === sku);
-        cart.push(p);
+    function toggleCart() { document.getElementById('cartModal').classList.toggle('hidden'); }
+    function addToCart(sku) { 
+        const p = products.find(x => x.sku === sku); 
+        cart.push(p); 
         document.getElementById('cartCount').innerText = cart.length;
-        // Тут можна додати відправку в телеграм, як ми робили раніше
+        updateCart();
+    }
+
+    function updateCart() {
+        document.getElementById('cartItems').innerHTML = cart.map((i, idx) => `
+            <div class="bg-slate-50 p-4 rounded-xl flex justify-between">
+                <div class="text-xs font-bold">${i.name}</div>
+                <button onclick="cart.splice(${idx}, 1); updateCart();" class="text-red-400 px-2"><i class="fas fa-trash"></i></button>
+            </div>
+        `).join('');
+    }
+
+    function sendOrder() {
+        const ph = document.getElementById('uPhone').value;
+        if(!ph || cart.length === 0) return alert("Додайте телефон та товари!");
+        const total = cart.reduce((s, i) => s + i.price, 0);
+        let m = `🚀 TREND ELECTRO\n📱 Тел: ${ph}\n💰 Сума: ${total} грн\n\n`;
+        m += cart.map(i => `• ${i.name} (${i.price}грн)`).join('\n');
+
+        fetch(`https://api.telegram.org/bot6918546766:AAEWLatU6fz6ITX8OI81Hd6nrMc-jE8u5cU/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ chat_id: "1246930818", text: m })
+        }).then(() => { 
+            alert("Замовлення надіслано в Телеграм!"); 
+            cart=[]; document.getElementById('cartCount').innerText = 0; toggleCart(); 
+        });
     }
 
     window.onload = render;
