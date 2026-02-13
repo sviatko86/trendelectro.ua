@@ -6,103 +6,66 @@
     <title>Trend Electro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
-        body { font-family: 'Inter', sans-serif; background: #f8fafc; padding-bottom: 80px; }
-        .product-card { background: white; border-radius: 20px; border: 1px solid #e2e8f0; display: flex; flex-direction: column; transition: 0.3s; }
-        .product-card:hover { border-color: #fbbf24; transform: translateY(-3px); }
-    </style>
 </head>
-<body class="text-slate-900">
-
-<header class="bg-white border-b sticky top-0 z-50 p-4 shadow-sm">
-    <div class="container mx-auto flex justify-between items-center">
-        <h1 class="text-xl font-black uppercase italic italic">Trend <span class="text-yellow-500">Electro</span></h1>
-        <button onclick="toggleCart()" class="bg-slate-900 text-white px-6 py-2 rounded-xl flex items-center gap-3">
-            <i class="fas fa-shopping-basket text-yellow-400"></i>
-            <span id="cartCount" class="font-bold">0</span>
+<body class="bg-slate-50 text-slate-900">
+    <header class="bg-white border-b sticky top-0 z-50 p-4 shadow-sm flex justify-between items-center">
+        <h1 class="text-xl font-black uppercase italic">Trend <span class="text-yellow-500">Electro</span></h1>
+        <button onclick="document.getElementById('cart').classList.toggle('hidden')" class="bg-slate-900 text-white px-4 py-2 rounded-xl">
+            Кошик (<span id="count">0</span>)
         </button>
+    </header>
+
+    <main class="p-6 grid gap-6" id="grid"></main>
+
+    <div id="cart" class="fixed inset-0 bg-white z-[100] hidden p-6">
+        <button onclick="document.getElementById('cart').classList.toggle('hidden')" class="mb-6 font-bold text-red-500">← Назад</button>
+        <h2 class="text-2xl font-black mb-4">ВАШЕ ЗАМОВЛЕННЯ</h2>
+        <div id="items" class="mb-6"></div>
+        <input type="text" id="tel" placeholder="Ваш телефон" class="w-full p-4 border rounded-xl mb-4">
+        <button onclick="send()" class="w-full bg-yellow-400 p-5 rounded-xl font-black">ВІДПРАВИТИ ЗАМОВЛЕННЯ</button>
     </div>
-</header>
 
-<main class="container mx-auto px-4 py-8">
-    <div id="grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
-</main>
+    <script>
+        const products = [
+            {id: '1', name: 'LED лампа LEBRON 8W', price: 41},
+            {id: '2', name: 'Електрофумігатор НЕКУСАЙКА', price: 70},
+            {id: '3', name: 'Масляний фільтр GUCBIR', price: 180}
+        ];
+        let basket = [];
 
-<div id="cartModal" class="fixed inset-0 bg-black/60 z-[100] hidden flex justify-end">
-    <div class="bg-white w-full max-w-md h-full p-8 flex flex-col shadow-2xl">
-        <h2 class="text-2xl font-black mb-6 italic uppercase">Кошик</h2>
-        <div id="cartItems" class="flex-1 overflow-y-auto space-y-4"></div>
-        <div class="pt-6 border-t mt-6">
-            <input type="text" id="uPhone" placeholder="Ваш телефон" class="w-full p-4 bg-slate-100 rounded-xl mb-4 text-center text-lg font-bold outline-none border-2 border-transparent focus:border-yellow-400">
-            <button onclick="sendOrder()" class="w-full bg-slate-900 text-white py-5 rounded-xl font-black uppercase tracking-widest active:scale-95 transition">Замовити ⚡️</button>
-        </div>
-    </div>
-</div>
-
-<script>
-    const MARKUP = 1.5;
-    const rawData = [
-        {sku:"11-11-17-1", name:"LED лампа LEBRON L-A60, 8W, Е27, 3000K", in:27},
-        {sku:"11-11-31-1", name:"LED лампа LEBRON L-A60, 10W, Е27, 3000K", in:31.2},
-        {sku:"13-14-32", name:"Прожектор LED LEBRON L-LF-3041, 30W", in:183},
-        {sku:"89-99-23", name:"Електрофумігатор НЕКУСАЙКА з блістером", in:46.8},
-        {sku:"89-99-28", name:"Комплект: прилад + рідина НЕКУСАЙКА", in:96.3},
-        {sku:"75-90-50", name:"Масляний фільтр GUCBIR OF-1", in:120}
-    ];
-
-    const products = rawData.map(p => ({ ...p, price: Math.round(p.in * MARKUP) }));
-    let cart = [];
-
-    function render() {
-        const grid = document.getElementById('grid');
-        grid.innerHTML = products.map(p => `
-            <div class="product-card p-6">
-                <span class="text-[10px] font-bold text-slate-300 uppercase mb-2 block">${p.sku}</span>
-                <h3 class="font-bold text-sm h-12 mb-4 leading-tight">${p.name}</h3>
-                <div class="flex justify-between items-center pt-4 border-t">
-                    <span class="text-xl font-black">${p.price} грн</span>
-                    <button onclick="addToCart('${p.sku}')" class="bg-yellow-400 w-10 h-10 rounded-xl flex items-center justify-center shadow-lg active:scale-90 transition"><i class="fas fa-plus"></i></button>
+        function render() {
+            document.getElementById('grid').innerHTML = products.map(p => `
+                <div class="bg-white p-4 rounded-2xl border shadow-sm">
+                    <h3 class="font-bold text-sm h-10">${p.name}</h3>
+                    <div class="flex justify-between items-center mt-4">
+                        <span class="font-black">${p.price} грн</span>
+                        <button onclick="add('${p.id}')" class="bg-yellow-400 w-10 h-10 rounded-lg">+</button>
+                    </div>
                 </div>
-            </div>
-        `).join('');
-    }
+            `).join('');
+        }
 
-    function toggleCart() { document.getElementById('cartModal').classList.toggle('hidden'); }
-    function addToCart(sku) { 
-        const p = products.find(x => x.sku === sku); 
-        cart.push(p); 
-        document.getElementById('cartCount').innerText = cart.length;
-        updateCart();
-    }
+        function add(id) {
+            basket.push(products.find(x => x.id === id));
+            document.getElementById('count').innerText = basket.length;
+            updateCart();
+        }
 
-    function updateCart() {
-        document.getElementById('cartItems').innerHTML = cart.map((i, idx) => `
-            <div class="bg-slate-50 p-4 rounded-xl flex justify-between">
-                <div class="text-xs font-bold">${i.name}</div>
-                <button onclick="cart.splice(${idx}, 1); updateCart();" class="text-red-400 px-2"><i class="fas fa-trash"></i></button>
-            </div>
-        `).join('');
-    }
+        function updateCart() {
+            document.getElementById('items').innerHTML = basket.map(i => `<div class="p-2 border-b">${i.name} - ${i.price}грн</div>`).join('');
+        }
 
-    function sendOrder() {
-        const ph = document.getElementById('uPhone').value;
-        if(!ph || cart.length === 0) return alert("Додайте телефон та товари!");
-        const total = cart.reduce((s, i) => s + i.price, 0);
-        let m = `🚀 TREND ELECTRO\n📱 Тел: ${ph}\n💰 Сума: ${total} грн\n\n`;
-        m += cart.map(i => `• ${i.name} (${i.price}грн)`).join('\n');
-
-        fetch(`https://api.telegram.org/bot6918546766:AAEWLatU6fz6ITX8OI81Hd6nrMc-jE8u5cU/sendMessage`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ chat_id: "1246930818", text: m })
-        }).then(() => { 
-            alert("Замовлення надіслано в Телеграм!"); 
-            cart=[]; document.getElementById('cartCount').innerText = 0; toggleCart(); 
-        });
-    }
-
-    window.onload = render;
-</script>
+        function send() {
+            const t = document.getElementById('tel').value;
+            if(!t) return alert('Введіть номер!');
+            const msg = `⚡️ ЗАМОВЛЕННЯ: ${t}\nСумма: ${basket.reduce((a,b)=>a+b.price,0)}грн`;
+            fetch(`https://api.telegram.org/bot6918546766:AAEWLatU6fz6ITX8OI81Hd6nrMc-jE8u5cU/sendMessage`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({chat_id: "1246930818", text: msg})
+            }).then(() => { alert('Замовлення відправлено!'); location.reload(); });
+        }
+        render();
+    </script>
 </body>
 </html>
