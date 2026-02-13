@@ -3,45 +3,73 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trend Electro — Офіційний магазин</title>
+    <title>Trend Electro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
-        body { font-family: 'Inter', sans-serif; background: #f8fafc; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+        body { font-family: 'Inter', sans-serif; background: #f8fafc; padding-bottom: 80px; }
         .product-card { transition: 0.3s; border-radius: 20px; background: white; border: 1px solid #e2e8f0; display: flex; flex-direction: column; height: 100%; }
         .product-card:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.05); border-color: #fbbf24; }
         .category-btn.active { background: #fbbf24; color: black; box-shadow: 0 4px 12px rgba(251,191,36,0.3); }
-        .out-of-stock { opacity: 0.5; }
+        .out-of-stock { opacity: 0.5; filter: grayscale(0.8); }
     </style>
 </head>
 <body class="text-slate-900">
 
 <script>
-    const MARKUP = 1.5; // Твоя націнка +50%
+    const MARKUP = 1.5; // Націнка 50%
 
-    // ТВОЯ БАЗА (Тут ти можеш вставити всі товари з Excel)
-    const rawProducts = [
-        { sku: "11-11-14", name: "LED лампа LEBRON L-A60, 8W, Е27, 4100K", inPrice: 27, stock: "0" },
-        { sku: "11-11-17-1", name: "LED лампа LEBRON L-A60-82730, 8W, Е27, 3000K", inPrice: 27, stock: "10" },
-        { sku: "11-11-18-2", name: "LED лампа LEBRON L-A60-82741, 8W, Е27, 4100K", inPrice: 27, stock: "10" },
-        { sku: "89-99-23", name: "Електрофумігатор універсальний з блістером, НЕКУСАЙКА", inPrice: 46.8, stock: "10" },
-        { sku: "89-99-28", name: "Комплект: прилад + рідина від комарів, НЕКУСАЙКА", inPrice: 96.3, stock: "10" },
-        { sku: "75-90-50", name: "Масляний фільтр GUCBIR OF-1", inPrice: 120, stock: "10" }
+    const rawData = [
+        {sku:"11-11-14", name:"LED лампа LEBRON L-A60, 8W, Е27, 4100K", in:27, s:"0"},
+        {sku:"11-11-17-1", name:"LED лампа LEBRON L-A60-82730, 8W, Е27, 3000K", in:27, s:"10"},
+        {sku:"11-11-18-2", name:"LED лампа LEBRON L-A60-82741, 8W, Е27, 4100K", in:27, s:"10"},
+        {sku:"11-11-19", name:"LED лампа LEBRON L-A60-82765, 8W, Е27, 6500K", in:27, s:"10"},
+        {sku:"11-11-28-1", name:"LED лампа LEBRON L-A60, 10W, Е27, 4100K", in:25.5, s:"0"},
+        {sku:"11-11-31-1", name:"LED лампа LEBRON L-A60-102730, 10W, Е27, 3000K", in:31.2, s:"10"},
+        {sku:"11-11-32-2", name:"LED лампа LEBRON L-A60-102741, 10W, Е27, 4100K", in:31.2, s:"10"},
+        {sku:"11-11-33-2", name:"LED лампа LEBRON L-A60-102765, 10W, Е27, 6500K", in:31.2, s:"10"},
+        {sku:"11-11-42-1", name:"LED лампа LEBRON L-A60-122730, 12W, Е27, 3000K", in:32.7, s:"10"},
+        {sku:"11-11-43-2", name:"LED лампа LEBRON L-A60-122741, 12W, Е27, 4100K", in:32.7, s:"10"},
+        {sku:"11-11-44-2", name:"LED лампа LEBRON L-A60-122765, 12W, Е27, 6500K", in:32.7, s:"10"},
+        {sku:"11-11-52-1", name:"LED лампа LEBRON L-A60-152730, 15W, Е27, 3000K", in:43.8, s:"10"},
+        {sku:"11-11-53-2", name:"LED лампа LEBRON L-A60-152741, 15W, Е27, 4100K", in:43.8, s:"10"},
+        {sku:"11-11-54-2", name:"LED лампа LEBRON L-A60-152765, 15W, Е27, 6500K", in:43.8, s:"10"},
+        {sku:"11-14-14", name:"LED лампа LEBRON L-A65, 20W, Е27, 4100K", in:72, s:"10"},
+        {sku:"13-14-32", name:"Прожектор LED LEBRON L-LF-3041, 30W, 4100K", in:183, s:"10"},
+        {sku:"13-14-52", name:"Прожектор LED LEBRON L-LF-5041, 50W, 4100K", in:249, s:"10"},
+        {sku:"15-12-11", name:"LED панель LEBRON L-P-310, 3W, 4100K", in:48, s:"10"},
+        {sku:"15-12-12", name:"LED панель LEBRON L-P-610, 6W, 4100K", in:63, s:"10"},
+        {sku:"15-12-13", name:"LED панель LEBRON L-P-1210, 12W, 4100K", in:84, s:"10"},
+        {sku:"15-12-14", name:"LED панель LEBRON L-P-1810, 18W, 4100K", in:108, s:"10"},
+        {sku:"15-12-15", name:"LED панель LEBRON L-P-2410, 24W, 4100K", in:159, s:"10"},
+        {sku:"75-90-50", name:"Масляний фільтр GUCBIR OF-1", in:120, s:"10"},
+        {sku:"75-90-51", name:"Паливний фільтр GUCBIR FF-1", in:150, s:"10"},
+        {sku:"75-90-52", name:"Повітряний фільтр GUCBIR AF-1", in:210, s:"10"},
+        {sku:"89-99-15", name:"Липка стрічка від мух, НЕКУСАЙКА", in:6.9, s:"10"},
+        {sku:"89-99-20", name:"Пластини від комарів Стандарт, 10 шт", in:14.4, s:"10"},
+        {sku:"89-99-22", name:"Електрофумігатор НЕКУСАЙКА", in:37.8, s:"10"},
+        {sku:"89-99-23", name:"Електрофумігатор з блістером", in:46.8, s:"10"},
+        {sku:"89-99-25", name:"Рідина від комарів, 45 ночей", in:51.9, s:"10"},
+        {sku:"89-99-28", name:"Комплект: прилад + рідина, НЕКУСАЙКА", in:96.3, s:"10"},
+        {sku:"89-99-32", name:"Cпрей від комарів, 100 мл", in:64.5, s:"10"}
     ];
 
-    const products = rawProducts.map(p => ({
-        ...p,
-        price: Math.round(p.inPrice * MARKUP),
-        cat: getCategory(p.name),
-        isAvailable: p.stock !== "0"
+    const products = rawData.map(p => ({
+        sku: p.sku,
+        name: p.name,
+        price: Math.round(p.in * MARKUP),
+        cat: getCat(p.name),
+        avail: p.s !== "0"
     }));
 
-    function getCategory(name) {
-        const n = name.toLowerCase();
-        if (n.includes("лампа")) return "Лампи";
-        if (n.includes("комар") || n.includes("фумігатор") || n.includes("некусайка")) return "Захист від комах";
-        if (n.includes("фільтр") || n.includes("gucbir")) return "Запчастини та Генеpатори";
+    function getCat(n) {
+        const name = n.toLowerCase();
+        if(name.includes("лампа")) return "Лампи";
+        if(name.includes("прожектор")) return "Прожектори";
+        if(name.includes("панель")) return "LED Панелі";
+        if(name.includes("фільтр")) return "Запчастини";
+        if(name.includes("некусайка") || name.includes("комар")) return "Захист від комах";
         return "Інше";
     }
 
@@ -52,85 +80,77 @@
 <header class="bg-white border-b sticky top-0 z-50 shadow-sm">
     <div class="container mx-auto px-4 py-4 flex flex-col md:flex-row items-center justify-between gap-4">
         <div class="flex items-center gap-3 cursor-pointer" onclick="location.reload()">
-            <div class="bg-yellow-400 p-3 rounded-xl shadow-lg">
-                <i class="fas fa-bolt text-xl"></i>
+            <div class="bg-yellow-400 p-3 rounded-xl shadow-lg shadow-yellow-200">
+                <i class="fas fa-bolt text-xl text-black"></i>
             </div>
             <h1 class="text-xl font-black uppercase italic tracking-tighter">Trend <span class="text-yellow-500 text-2xl">Electro</span></h1>
         </div>
-        
-        <div class="flex-1 max-w-xl w-full relative">
-            <input type="text" id="searchInput" oninput="render()" placeholder="Пошук товару або коду..." class="w-full bg-slate-100 border-2 border-transparent focus:border-yellow-400 focus:bg-white rounded-xl py-3 px-5 outline-none transition font-medium">
+        <div class="flex-1 max-w-xl w-full">
+            <input type="text" id="sInp" oninput="render()" placeholder="Шукати за назвою або кодом..." class="w-full bg-slate-100 border-2 border-transparent focus:border-yellow-400 focus:bg-white rounded-2xl py-3 px-6 outline-none transition font-semibold text-sm">
         </div>
-
-        <button onclick="toggleCart()" class="bg-slate-900 text-white px-6 py-3 rounded-xl flex items-center gap-3 shadow-lg active:scale-95 transition">
-            <i class="fas fa-shopping-cart text-yellow-400"></i>
+        <button onclick="toggleCart()" class="bg-slate-900 text-white px-8 py-3 rounded-2xl flex items-center gap-3 shadow-xl active:scale-95 transition relative">
+            <i class="fas fa-shopping-basket text-yellow-400"></i>
             <span id="cartCount" class="font-black">0</span>
         </button>
     </div>
 </header>
 
 <main class="container mx-auto px-4 py-8 flex flex-col lg:flex-row gap-8">
-    <aside class="w-full lg:w-64 flex-shrink-0">
-        <div class="sticky top-24 space-y-2" id="catMenu"></div>
-    </aside>
-
+    <aside class="w-full lg:w-64 space-y-2" id="catMenu"></aside>
     <div class="flex-1">
-        <div id="productGrid" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6"></div>
+        <div id="grid" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6"></div>
     </div>
 </main>
 
 <div id="cartModal" class="fixed inset-0 bg-black/60 z-[100] hidden flex justify-end backdrop-blur-sm">
     <div class="bg-white w-full max-w-md h-full p-8 flex flex-col shadow-2xl">
         <div class="flex justify-between items-center mb-8">
-            <h2 class="text-2xl font-black uppercase italic">Кошик</h2>
-            <button onclick="toggleCart()"><i class="fas fa-times text-2xl text-slate-300"></i></button>
+            <h2 class="text-2xl font-black uppercase italic tracking-tight">Ваш кошик</h2>
+            <button onclick="toggleCart()"><i class="fas fa-times text-2xl text-slate-300 hover:text-black"></i></button>
         </div>
-        <div id="cartItems" class="flex-1 overflow-y-auto space-y-3"></div>
+        <div id="cartItems" class="flex-1 overflow-y-auto space-y-4 pr-2"></div>
         <div class="pt-6 border-t mt-6">
-            <div class="flex justify-between items-center mb-4 italic font-black text-xl">
-                <span>РАЗОМ:</span>
-                <span id="cartTotal">0 грн</span>
+            <div class="flex justify-between items-center mb-6 font-black text-2xl uppercase">
+                <span>Разом:</span>
+                <span id="cartTotal" class="text-yellow-500">0 грн</span>
             </div>
-            <input type="text" id="userPhone" placeholder="Ваш номер телефону" class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-xl mb-4 font-bold outline-none focus:border-yellow-400 transition">
-            <button onclick="sendOrder()" class="w-full bg-yellow-400 text-black py-5 rounded-2xl font-black uppercase tracking-widest shadow-xl active:scale-95 transition">Оформити замовлення</button>
+            <input type="text" id="uPhone" placeholder="+380 (__) ___ __ __" class="w-full p-5 bg-slate-50 border-2 border-slate-100 rounded-2xl mb-4 font-black outline-none focus:border-yellow-400 transition text-center text-xl">
+            <button onclick="sendOrder()" class="w-full bg-slate-900 text-white py-6 rounded-2xl font-black uppercase tracking-widest shadow-2xl active:scale-95 transition text-lg">Замовити ⚡️</button>
         </div>
     </div>
 </div>
 
 <script>
     function render() {
-        const query = document.getElementById('searchInput').value.toLowerCase();
-        const grid = document.getElementById('productGrid');
+        const q = document.getElementById('sInp').value.toLowerCase();
+        const grid = document.getElementById('grid');
         grid.innerHTML = '';
 
-        const categories = ["Всі", ...new Set(products.map(p => p.cat))];
-        const catMenu = document.getElementById('catMenu');
-        catMenu.innerHTML = categories.map(c => `
-            <button onclick="setCat('${c}')" class="category-btn w-full text-left px-5 py-3 rounded-xl font-bold text-sm transition ${currentCat === c ? 'active' : 'text-slate-500 hover:bg-slate-100'}">
+        const cats = ["Всі", ...new Set(products.map(p => p.cat))];
+        const menu = document.getElementById('catMenu');
+        menu.innerHTML = cats.map(c => `
+            <button onclick="setCat('${c}')" class="category-btn w-full text-left px-6 py-4 rounded-2xl font-black text-xs uppercase tracking-wider transition ${currentCat === c ? 'active' : 'text-slate-400 hover:bg-slate-100'}">
                 ${c}
             </button>
         `).join('');
 
         const filtered = products.filter(p => {
-            const matchesSearch = p.name.toLowerCase().includes(query) || p.sku.toLowerCase().includes(query);
-            const matchesCat = currentCat === "Всі" || p.cat === currentCat;
-            return matchesSearch && matchesCat;
+            const mS = p.name.toLowerCase().includes(q) || p.sku.toLowerCase().includes(q);
+            const mC = currentCat === "Всі" || p.cat === currentCat;
+            return mS && mC;
         });
 
         filtered.forEach(p => {
             grid.innerHTML += `
-                <div class="product-card p-6 ${!p.isAvailable ? 'out-of-stock' : ''}">
-                    <div class="mb-2">
-                        <span class="text-[10px] font-black text-slate-300 uppercase tracking-widest">${p.sku}</span>
-                    </div>
+                <div class="product-card p-6 ${!p.avail ? 'out-of-stock' : ''}">
+                    <span class="text-[10px] font-black text-slate-300 tracking-[3px] uppercase mb-4 block">${p.sku}</span>
                     <h3 class="font-bold text-sm leading-tight mb-8 flex-1 text-slate-800">${p.name}</h3>
-                    <div class="flex justify-between items-center pt-4 border-t border-slate-50">
-                        <span class="text-xl font-black">${p.isAvailable ? p.price + ' <small class="text-xs">грн</small>' : '<span class="text-slate-400 text-sm italic">Немає</span>'}</span>
-                        ${p.isAvailable ? `
-                            <button onclick="addToCart('${p.sku}')" class="bg-slate-900 text-white w-10 h-10 rounded-xl hover:bg-yellow-400 hover:text-black transition shadow-md active:scale-90 flex items-center justify-center">
-                                <i class="fas fa-plus"></i>
-                            </button>
-                        ` : ''}
+                    <div class="flex justify-between items-center pt-5 border-t border-slate-50">
+                        <div>
+                            <p class="text-[9px] font-black text-slate-400 uppercase mb-1">Ціна продажу</p>
+                            <span class="text-2xl font-black italic">${p.avail ? p.price + ' <small class="text-xs not-italic">грн</small>' : '<span class="text-slate-300">Немає</span>'}</span>
+                        </div>
+                        ${p.avail ? `<button onclick="addToCart('${p.sku}')" class="bg-yellow-400 text-black w-12 h-12 rounded-2xl hover:bg-black hover:text-white transition shadow-lg active:scale-90 flex items-center justify-center text-xl"><i class="fas fa-plus"></i></button>` : ''}
                     </div>
                 </div>
             `;
@@ -139,47 +159,35 @@
 
     function setCat(c) { currentCat = c; render(); }
     function toggleCart() { document.getElementById('cartModal').classList.toggle('hidden'); }
-
-    function addToCart(sku) {
-        const p = products.find(x => x.sku === sku);
-        cart.push(p);
-        updateCart();
-    }
+    function addToCart(sku) { const p = products.find(x => x.sku === sku); cart.push(p); updateCart(); }
 
     function updateCart() {
         document.getElementById('cartCount').innerText = cart.length;
-        const total = cart.reduce((sum, item) => sum + item.price, 0);
+        const total = cart.reduce((s, i) => s + i.price, 0);
         document.getElementById('cartTotal').innerText = total + " грн";
-        const list = document.getElementById('cartItems');
-        list.innerHTML = cart.map((item, idx) => `
-            <div class="bg-slate-50 p-4 rounded-xl flex justify-between items-center">
-                <div class="max-w-[80%] text-xs font-bold">${item.name}</div>
-                <button onclick="cart.splice(${idx}, 1); updateCart();" class="text-slate-300 hover:text-red-500"><i class="fas fa-trash-alt"></i></button>
+        document.getElementById('cartItems').innerHTML = cart.map((i, idx) => `
+            <div class="bg-slate-50 p-5 rounded-2xl flex justify-between items-center border border-slate-100">
+                <div class="max-w-[75%]">
+                    <p class="text-[10px] font-black text-slate-400 mb-1">${i.sku}</p>
+                    <p class="text-xs font-bold leading-tight mb-1">${i.name}</p>
+                    <p class="font-black text-yellow-600">${i.price} грн</p>
+                </div>
+                <button onclick="cart.splice(${idx}, 1); updateCart();" class="text-slate-300 hover:text-red-500 transition"><i class="fas fa-trash-alt text-xl"></i></button>
             </div>
         `).join('');
     }
 
     function sendOrder() {
-        const phone = document.getElementById('userPhone').value;
-        if(!phone || cart.length === 0) return alert("Додайте номер телефону та товари!");
-        
-        const total = cart.reduce((sum, item) => sum + item.price, 0);
-        let msg = `⚡️ TREND ELECTRO\n📞 Клієнт: ${phone}\n💰 Сума: ${total} грн\n\nТовари:\n` + 
-                  cart.map(i => `• [${i.sku}] ${i.name}`).join('\n');
-        
-        const token = "6918546766:AAEWLatU6fz6ITX8OI81Hd6nrMc-jE8u5cU";
-        const chat = "1246930818";
-
-        fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+        const ph = document.getElementById('uPhone').value;
+        if(!ph || cart.length === 0) return alert("Введіть номер телефону та додайте товари!");
+        const total = cart.reduce((s, i) => s + i.price, 0);
+        let m = `🔥 TREND ELECTRO\n📱 Тел: ${ph}\n💰 Сума: ${total} грн\n\nТовари:\n` + cart.map(i => `• [${i.sku}] ${i.name}`).join('\n');
+        fetch(`https://api.telegram.org/bot6918546766:AAEWLatU6fz6ITX8OI81Hd6nrMc-jE8u5cU/sendMessage`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ chat_id: chat, text: msg })
-        }).then(() => {
-            alert("Замовлення надіслано!");
-            cart = []; updateCart(); toggleCart();
-        });
+            body: JSON.stringify({ chat_id: "1246930818", text: m })
+        }).then(() => { alert("Замовлення прийнято!"); cart=[]; updateCart(); toggleCart(); });
     }
-
     window.onload = render;
 </script>
 </body>
