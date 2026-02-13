@@ -3,40 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trend Electro — Офіційний прайс</title>
+    <title>Trend Electro — Прайс</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
-        body { font-family: 'Inter', sans-serif; }
-    </style>
 </head>
 <body class="bg-slate-50 text-slate-900">
 
 <header class="bg-white border-b sticky top-0 z-50 p-4 shadow-sm">
     <div class="container mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
         <div class="flex items-center gap-3 cursor-pointer" onclick="location.reload()">
-            <div class="bg-yellow-400 p-2 rounded-lg"><i class="fas fa-bolt text-black"></i></div>
-            <h1 class="text-xl font-black uppercase italic text-black">Trend <span class="text-yellow-500">Electro</span></h1>
+            <div class="bg-yellow-400 p-2 rounded-lg text-black font-bold"><i class="fas fa-bolt"></i></div>
+            <h1 class="text-xl font-black uppercase italic">Trend <span class="text-yellow-500">Electro</span></h1>
         </div>
-        <input type="text" id="searchInput" oninput="render()" placeholder="Пошук серед 3000 товарів..." class="flex-1 max-w-xl bg-slate-100 border-none rounded-2xl py-3 px-6 outline-none focus:ring-2 focus:ring-yellow-400 font-semibold">
-        <div class="bg-slate-900 text-white px-6 py-3 rounded-2xl flex items-center gap-3">
-            <i class="fas fa-shopping-basket text-yellow-400"></i>
-            <span id="cartCount" class="font-black">0</span>
-        </div>
+        <input type="text" id="searchInput" oninput="render()" placeholder="Пошук по артикулу або назві..." class="flex-1 max-w-xl bg-slate-100 border-none rounded-2xl py-3 px-6 outline-none focus:ring-2 focus:ring-yellow-400 font-semibold">
     </div>
 </header>
 
 <main class="container mx-auto px-4 py-8">
-    <div id="loader" class="text-center py-20 font-bold text-slate-400 animate-pulse text-xl">
-        🔌 Зчитуємо базу товарів...
-    </div>
+    <div id="loader" class="text-center py-20 font-bold text-slate-400 animate-pulse text-xl">🔌 Оновлюємо вітрину...</div>
     <div id="grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
 </main>
 
 <script>
-    const MARKUP = 1.5; // Націнка 50%
+    const MARKUP = 1.5; // Твоя націнка +50%
     let products = [];
 
     function loadData() {
@@ -45,23 +35,28 @@
             header: false,
             skipEmptyLines: true,
             complete: function(results) {
-                // Магія: розбиваємо рядок там, де більше одного пробілу або табуляція
-                products = results.data.slice(1).map(row => {
-                    const line = row[0] ? row[0].split(/\t| {2,}/).filter(x => x.trim() !== "") : [];
+                products = results.data.map(row => {
+                    // Об'єднуємо рядок і розбиваємо його по великих пробілах (табах)
+                    const line = row.join(' ').trim();
+                    const parts = line.split(/\t| {2,}/).filter(x => x.trim() !== "");
                     
-                    if (line.length < 3) return null;
+                    if (parts.length < 2) return null;
 
-                    const sku = line[0];
-                    // Назва — це все між Артикулом та ціною
-                    const name = line.slice(1, -2).join(' ');
-                    // Ціна зазвичай передостання
-                    const rawPrice = line[line.length - 2].replace(',', '.');
+                    const sku = parts[0]; // Перше слово - артикул
+                    const rawPrice = parts[parts.length - 1].replace(',', '.'); // Останнє - ціна
                     const basePrice = parseFloat(rawPrice) || 0;
-                    const finalPrice = Math.round(basePrice * MARKUP);
-                    const stock = line[line.length - 1];
+                    
+                    // Все що посередині - це назва
+                    const name = parts.slice(1, -1).join(' ');
 
-                    return { sku, name, price: finalPrice, stock };
-                }).filter(p => p && p.name !== "");
+                    if (!name || isNaN(basePrice) || basePrice === 0) return null;
+
+                    return {
+                        sku: sku,
+                        name: name,
+                        price: Math.round(basePrice * MARKUP)
+                    };
+                }).filter(p => p !== null);
 
                 document.getElementById('loader').classList.add('hidden');
                 render();
@@ -71,21 +66,20 @@
 
     function render() {
         const query = document.getElementById('searchInput').value.toLowerCase();
-        const grid = document.getElementById('grid');
+        const filtered = products.filter(p => p.name.toLowerCase().includes(query) || p.sku.toLowerCase().includes(query));
         
-        const filtered = products.filter(p => 
-            p.name.toLowerCase().includes(query) || p.sku.toLowerCase().includes(query)
-        );
-
-        grid.innerHTML = filtered.slice(0, 100).map(p => `
-            <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm hover:border-yellow-400 transition flex flex-col justify-between h-full">
+        document.getElementById('grid').innerHTML = filtered.slice(0, 200).map(p => `
+            <div class="bg-white p-6 rounded-[2.5rem] border border-slate-200 shadow-sm hover:shadow-xl hover:border-yellow-400 transition-all duration-300 flex flex-col justify-between h-full group">
                 <div>
-                    <span class="text-[10px] font-black text-slate-300 uppercase tracking-widest block mb-2">${p.sku}</span>
-                    <h3 class="font-bold text-sm leading-tight mb-4 text-slate-800">${p.name}</h3>
+                    <span class="text-[10px] font-black text-slate-300 uppercase tracking-widest block mb-2 group-hover:text-yellow-500 transition-colors">${p.sku}</span>
+                    <h3 class="font-bold text-sm leading-tight mb-4 text-slate-800 line-clamp-2">${p.name}</h3>
                 </div>
                 <div class="flex justify-between items-center pt-4 border-t border-slate-50">
-                    <span class="text-2xl font-black text-slate-900">${p.price} <small class="text-[10px] uppercase text-slate-400">грн</small></span>
-                    <button class="bg-yellow-400 hover:bg-black hover:text-white w-10 h-10 rounded-xl transition flex items-center justify-center shadow-md active:scale-90">
+                    <div class="flex flex-col">
+                        <span class="text-2xl font-black text-slate-900">${p.price} <small class="text-[10px] uppercase text-slate-400">грн</small></span>
+                        <span class="text-[9px] text-green-500 font-bold uppercase tracking-tighter">Є в наявності</span>
+                    </div>
+                    <button class="bg-yellow-400 hover:bg-black hover:text-white w-12 h-12 rounded-2xl transition-all flex items-center justify-center shadow-lg active:scale-90">
                         <i class="fas fa-plus"></i>
                     </button>
                 </div>
