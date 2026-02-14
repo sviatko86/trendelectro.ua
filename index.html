@@ -3,107 +3,129 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trend Electro — Каталог</title>
+    <title>Trend Electro — Smart Catalog</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #0f172a; color: white; }
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; color: #1e293b; }
+        .product-card { background: white; border-radius: 2rem; border: 1px solid #e2e8f0; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .product-card:hover { transform: translateY(-5px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05); border-color: #facc15; }
+        .category-pill.active { background: #facc15; color: #000; border-color: #facc15; box-shadow: 0 4px 12px rgba(250, 204, 21, 0.3); }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .discount-badge { background: linear-gradient(135deg, #ef4444, #b91c1c); color: white; }
     </style>
 </head>
-<body class="pb-32">
+<body class="pb-40">
 
-<header class="bg-slate-800 p-4 sticky top-0 z-50 border-b border-slate-700">
-    <div class="container mx-auto flex justify-between items-center">
-        <h1 class="text-xl font-black uppercase italic italic">Trend <span class="text-yellow-500">Electro</span></h1>
-        <div id="cartCount" class="bg-yellow-400 text-black px-4 py-1 rounded-full font-bold">0</div>
+<header class="bg-white/90 backdrop-blur-lg border-b border-slate-200 sticky top-0 z-50 p-4">
+    <div class="container mx-auto">
+        <div class="flex justify-between items-center mb-4">
+            <div class="flex items-center gap-3" onclick="toggleAdmin()">
+                <div class="bg-yellow-400 p-2 rounded-xl text-black shadow-lg cursor-pointer"><i class="fas fa-bolt"></i></div>
+                <h1 class="text-xl font-black uppercase italic tracking-tighter">Trend <span class="text-yellow-500">Electro</span></h1>
+            </div>
+            <div class="flex gap-2">
+                <div id="cartBtn" class="bg-slate-900 text-white px-5 py-2 rounded-2xl flex items-center gap-2 font-black cursor-pointer shadow-lg active:scale-95 transition-all">
+                    <i class="fas fa-shopping-bag text-yellow-400"></i> <span id="cartCount">0</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex gap-2 mb-4">
+            <input type="text" id="promoInput" oninput="applyPromo()" placeholder="Ваш код на дисконт..." class="w-1/3 bg-white border border-slate-200 rounded-xl py-2 px-4 text-xs font-bold outline-none focus:ring-2 focus:ring-red-400">
+            <input type="text" id="searchInput" oninput="render()" placeholder="Шукати товар..." class="w-2/3 bg-slate-100 border-none rounded-xl py-2 px-4 outline-none focus:ring-2 focus:ring-yellow-400 text-slate-900 shadow-inner">
+        </div>
+
+        <div id="categoryList" class="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
+            <button onclick="setCategory('all', this)" class="category-pill active px-5 py-2 rounded-full border border-slate-200 whitespace-nowrap text-xs font-bold bg-white">Всі</button>
+            <button onclick="setCategory('ламп|led', this)" class="category-pill px-5 py-2 rounded-full border border-slate-200 whitespace-nowrap text-xs font-bold bg-white">Освітлення</button>
+            <button onclick="setCategory('корпус|світильник', this)" class="category-pill px-5 py-2 rounded-full border border-slate-200 whitespace-nowrap text-xs font-bold bg-white">Світильники</button>
+        </div>
     </div>
 </header>
 
-<main class="container mx-auto px-4 py-10">
-    <div id="loader" class="text-center">
-        <div class="inline-block animate-spin mb-4 text-yellow-400 text-4xl"><i class="fas fa-spinner"></i></div>
-        <p id="status" class="text-slate-400 font-bold uppercase tracking-widest text-xs">Завантаження...</p>
-        <div id="debug" class="mt-10 p-4 bg-black/50 rounded-xl text-left text-[10px] font-mono text-green-400 hidden overflow-auto max-h-60"></div>
+<main class="container mx-auto px-4 py-6">
+    <div id="adminPanel" class="hidden mb-6 p-4 bg-slate-900 rounded-2xl text-white text-xs">
+        <p class="font-bold mb-2 text-yellow-400 uppercase">Панель управління</p>
+        <div class="grid grid-cols-2 gap-4">
+            <div>Товарів у базі: <span id="totalItems">0</span></div>
+            <div>Поточна націнка: 1.5x</div>
+        </div>
     </div>
-    <div id="grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"></div>
+
+    <div id="loader" class="text-center py-20">
+        <div class="inline-block animate-spin mb-4 text-yellow-400 text-5xl"><i class="fas fa-circle-notch"></i></div>
+        <p id="status" class="font-black text-slate-400 uppercase tracking-widest text-[10px]">Trend Electro Sync...</p>
+    </div>
+    <div id="grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"></div>
 </main>
 
+<div id="orderBar" class="fixed bottom-0 left-0 right-0 bg-white p-6 shadow-[0_-10px_40px_rgba(0,0,0,0.1)] transform translate-y-full transition-all duration-500 z-50 rounded-t-[2.5rem]">
+    <div class="container mx-auto flex justify-between items-center">
+        <div>
+            <p class="text-[10px] font-black uppercase text-slate-400">До сплати:</p>
+            <span id="finalSum" class="text-2xl font-black italic text-slate-900">0 грн</span>
+            <p class="text-[10px] font-bold text-green-600 tracking-tight mt-1">
+                <i class="fas fa-coins"></i> Ваш кешбек: <span id="cashbackSum">0</span> грн
+            </p>
+        </div>
+        <button onclick="sendOrder()" class="bg-slate-900 text-white px-8 py-4 rounded-2xl font-black flex items-center gap-3 shadow-xl active:scale-95 transition-all">
+            ЗАМОВИТИ <i class="fab fa-telegram-plane text-yellow-400"></i>
+        </button>
+    </div>
+</div>
+
 <script>
-    const MARKUP = 1.5;
     let products = [];
+    let cart = {};
+    let currentFilter = 'all';
+    let userDiscount = 0; // % знижки
+
+    // Промокоди: код -> відсоток знижки
+    const PROMO_CODES = {
+        'TREND10': 10,
+        'VIP5': 5,
+        'СВЯТ': 15
+    };
 
     async function loadData() {
-        const status = document.getElementById('status');
-        const debug = document.getElementById('debug');
-        
         try {
-            debug.classList.remove('hidden');
-            debug.innerHTML += "> Спроба завантажити data.csv...<br>";
-            
             const response = await fetch('data.csv?v=' + Date.now());
-            
-            debug.innerHTML += "> Статус відповіді: " + response.status + " " + response.statusText + "<br>";
-            
-            if (!response.ok) throw new Error("Файл не знайдено на сервері");
-
             const text = await response.text();
-            debug.innerHTML += "> Отримано тексту: " + text.length + " символів<br>";
-            debug.innerHTML += "> Перші 50 символів: " + text.substring(0, 50).replace(/\n/g, ' [Enter] ') + "<br>";
-
-            const rows = text.split('\n').filter(r => r.trim() !== "");
-            debug.innerHTML += "> Знайдено рядків: " + rows.length + "<br>";
-
+            const rows = text.split('\n');
+            
             products = rows.map((row, index) => {
-                if (index === 0) return null; // Пропускаємо шапку
+                if (index === 0 || !row.trim()) return null;
+                let parts = row.split('\t');
+                if (parts.length < 3) parts = row.split(',');
+                if (parts.length < 2) return null;
 
-                // Пробуємо різні розділювачі: Табуляція, потім Кома
-                let cols = row.split('\t');
-                if (cols.length < 2) cols = row.split(',');
-
-                if (cols.length < 2) return null;
-
-                const sku = cols[0].trim();
-                const priceRaw = cols[cols.length - 1].replace(',', '.').trim();
+                const sku = parts[0].trim();
+                const priceRaw = parts[parts.length - 1].replace(',', '.').trim();
+                const name = parts.slice(1, -1).join(', ').trim() || parts[1];
                 const priceBase = parseFloat(priceRaw);
-                const name = cols.slice(1, -1).join(', ').trim() || cols[1];
 
-                if (!isNaN(priceBase)) {
-                    return { sku, name, price: Math.round(priceBase * MARKUP) };
-                }
-                return null;
+                if (isNaN(priceBase)) return null;
+                return { id: index, sku, name, base: priceBase };
             }).filter(p => p !== null);
 
-            debug.innerHTML += "> Успішно оброблено товарів: " + products.length + "<br>";
-
-            if (products.length > 0) {
-                document.getElementById('loader').classList.add('hidden');
-                render();
-            } else {
-                status.innerText = "Товари не розпізнані. Перевір формат файлу.";
-            }
-
+            document.getElementById('totalItems').innerText = products.length;
+            document.getElementById('loader').classList.add('hidden');
+            render();
         } catch (e) {
-            status.innerHTML = "<span class='text-red-500'>ПОМИЛКА!</span>";
-            debug.innerHTML += "<br><span class='text-red-500'>!!! ПОМИЛКА: " + e.message + "</span>";
+            document.getElementById('status').innerText = "Помилка зв'язку з базою";
         }
     }
 
-    function render() {
-        const grid = document.getElementById('grid');
-        grid.innerHTML = products.map(p => `
-            <div class="bg-slate-800 p-4 rounded-2xl border border-slate-700">
-                <div class="text-[9px] text-slate-500 font-bold uppercase">${p.sku}</div>
-                <div class="text-sm font-bold my-2 h-10 overflow-hidden">${p.name}</div>
-                <div class="flex justify-between items-center mt-4">
-                    <div class="text-xl font-black text-yellow-500">${p.price} грн</div>
-                    <button class="bg-yellow-400 text-black p-2 rounded-lg text-xs font-bold">В кошик</button>
-                </div>
-            </div>
-        `).join('');
+    function applyPromo() {
+        const code = document.getElementById('promoInput').value.toUpperCase();
+        userDiscount = PROMO_CODES[code] || 0;
+        render(); // Перераховуємо ціни "на льоту"
+        updateUI();
     }
 
-    window.onload = loadData;
-</script>
-</body>
-</html>
+    function render() {
+        const query = document.getElementById('searchInput').value.toLowerCase();
+        const grid = document.getElementById('grid');
+        let filtered = products.filter(p => p.name.toLowerCa
