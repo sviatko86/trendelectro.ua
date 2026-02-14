@@ -1,133 +1,239 @@
-
 <!DOCTYPE html>
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trend Electro — Каталог</title>
+    <title>Trend Electro — Оптовий прайс (Admin Mode)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #0f172a; color: white; }
-        .product-card { background: #1e293b; border-radius: 1rem; border: 1px solid #334155; height: 100%; display: flex; flex-direction: column; justify-content: space-between; }
+        .cart-badge { position: absolute; top: -8px; right: -8px; background: red; color: white; border-radius: 50%; padding: 2px 6px; font-size: 10px; }
+        .admin-only { display: none; background: #fef3c7; border: 2px dashed #f59e0b; }
+        .hidden { display: none; }
     </style>
 </head>
-<body class="pb-32">
+<body class="bg-gray-50 text-gray-800">
 
-<header class="bg-slate-900/95 sticky top-0 z-50 p-4 border-b border-slate-800">
-    <div class="container mx-auto flex justify-between items-center mb-4">
-        <div class="flex items-center gap-2">
-            <div class="bg-yellow-400 p-2 rounded-lg text-black"><i class="fas fa-bolt"></i></div>
-            <h1 class="text-xl font-black uppercase italic tracking-tighter">Trend <span class="text-yellow-500">Electro</span></h1>
+    <nav class="bg-yellow-500 p-4 sticky top-0 z-50 shadow-lg">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-white tracking-tighter">TREND ELECTRO</h1>
+            <div class="flex gap-6 items-center">
+                <button onclick="loginAdmin()" class="text-white opacity-20 hover:opacity-100 transition"><i class="fas fa-lock"></i></button>
+                <button onclick="toggleCabinet()" class="text-white text-xl"><i class="fas fa-user-circle"></i></button>
+                <button onclick="toggleCart()" class="relative text-white text-xl">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span id="cart-count" class="cart-badge">0</span>
+                </button>
+            </div>
         </div>
-        <div id="cartCount" class="bg-yellow-400 text-black px-4 py-1 rounded-full font-black text-xs">0</div>
-    </div>
-    <div class="container mx-auto">
-        <input type="text" id="searchInput" oninput="render()" placeholder="Пошук (артикул або назва)..." 
-               class="w-full bg-slate-800 border border-slate-700 rounded-xl py-3 px-4 text-white outline-none focus:ring-2 focus:ring-yellow-400">
-    </div>
-</header>
+    </nav>
 
-<main class="container mx-auto px-4 py-6">
-    <div id="loader" class="text-center py-10 text-slate-500 font-bold uppercase text-[10px] tracking-widest">
-        <i class="fas fa-sync animate-spin text-yellow-400 text-2xl mb-2"></i><br>Синхронізація з базою...
-    </div>
-    <div id="grid" class="grid grid-cols-2 md:grid-cols-4 gap-3"></div>
-</main>
-
-<div id="orderBar" class="fixed bottom-0 left-0 right-0 bg-slate-900 p-6 border-t border-slate-800 transform translate-y-full transition-transform z-50">
-    <div class="container mx-auto flex justify-between items-center">
-        <div class="text-2xl font-black text-yellow-400 italic" id="finalSum">0 грн</div>
-        <button onclick="sendOrder()" class="bg-yellow-400 text-black px-8 py-3 rounded-xl font-black text-sm uppercase">Замовити</button>
-    </div>
-</div>
-
-<script>
-    let products = [];
-    let cart = {};
-
-    async function loadData() {
-        try {
-            const res = await fetch('data.csv?v=' + Date.now());
-            const text = await res.text();
-            // Розбиваємо на рядки та чистимо від порожніх
-            const lines = text.split(/\r?\n/).filter(l => l.trim().length > 2);
-
-            products = lines.map((line, index) => {
-                if (index === 0) return null; // пропускаємо шапку
-
-                const parts = line.split(',');
-                if (parts.length < 2) return null;
-
-                // Беремо останній елемент як ціну, все інше — як назву
-                const priceValue = parseFloat(parts[parts.length - 1].replace(/[^0-9.]/g, ''));
-                const sku = parts[0].trim();
-                const name = parts.slice(1, -1).join(' ').replace(/,/g, '').trim();
-
-                if (isNaN(priceValue)) return null;
-
-                return { id: index, sku, name, price: priceValue };
-            }).filter(p => p !== null);
-
-            document.getElementById('loader').style.display = 'none';
-            render();
-        } catch (e) {
-            document.getElementById('loader').innerHTML = "Помилка завантаження бази.";
-        }
-    }
-
-    function render() {
-        const q = document.getElementById('searchInput').value.toLowerCase();
-        const filtered = products.filter(p => p.name.toLowerCase().includes(q) || p.sku.toLowerCase().includes(q));
-
-        document.getElementById('grid').innerHTML = filtered.map(p => {
-            const finalPrice = Math.round(p.price * 1.5); // Націнка 50%
-            return `
-                <div class="product-card p-3">
-                    <div>
-                        <div class="text-[8px] text-slate-500 font-bold uppercase mb-1">${p.sku}</div>
-                        <div class="text-[10px] font-bold leading-tight line-clamp-3 text-slate-100 italic">${p.name}</div>
-                    </div>
-                    <div class="pt-3">
-                        <div class="text-lg font-black text-yellow-400 italic mb-2">${finalPrice} <span class="text-[10px] text-white">грн</span></div>
-                        <button onclick="addToCart(${p.id})" class="w-full bg-slate-700 py-2 rounded-lg text-[9px] font-black hover:bg-yellow-400 hover:text-black">В КОШИК</button>
-                    </div>
+    <div class="container mx-auto p-4">
+        
+        <div id="admin-panel" class="admin-only p-6 rounded-xl mb-6">
+            <div class="flex justify-between items-center">
+                <h2 class="text-xl font-black text-yellow-800"><i class="fas fa-tools"></i> ПАНЕЛЬ АДМІНІСТРАТОРА</h2>
+                <button onclick="logoutAdmin()" class="text-red-600 font-bold underline">Вийти</button>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                <div class="bg-white p-4 rounded shadow">
+                    <p class="text-gray-500 text-sm">Товарів у базі:</p>
+                    <p id="stat-count" class="text-2xl font-bold">0</p>
                 </div>
-            `;
-        }).join('');
-    }
+                <div class="bg-white p-4 rounded shadow">
+                    <p class="text-gray-500 text-sm">Поточне замовлення:</p>
+                    <p id="stat-total" class="text-2xl font-bold text-green-600">0 грн</p>
+                </div>
+                <div class="bg-white p-4 rounded shadow">
+                    <button onclick="alert('Експорт у Excel скоро буде доступний!')" class="w-full h-full bg-yellow-400 font-bold rounded">Експорт замовлення</button>
+                </div>
+            </div>
+        </div>
 
-    function addToCart(id) {
-        cart[id] = (cart[id] || 0) + 1;
-        updateUI();
-    }
+        <div class="mb-6">
+            <input type="text" id="search" placeholder="Пошук товару за назвою або артикулом..." 
+                class="w-full p-4 rounded-xl border-2 border-yellow-400 focus:outline-none focus:ring-2 ring-yellow-200 shadow-sm text-lg">
+        </div>
 
-    function updateUI() {
-        let count = 0, total = 0;
-        for (let id in cart) {
-            const p = products.find(i => i.id == id);
+        <div id="cabinet" class="hidden bg-white p-6 rounded-xl shadow-md mb-6 border-t-4 border-yellow-500">
+            <h2 class="text-xl font-bold mb-4">Кабінет Клієнта (Дисконт)</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <input type="text" id="user-name" placeholder="Ваше Ім'я / Компанія" class="p-3 border rounded-lg">
+                <input type="text" id="user-phone" placeholder="Телефон" class="p-3 border rounded-lg">
+                <button onclick="saveProfile()" class="bg-green-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-green-700">Зберегти</button>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-xl overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead class="bg-gray-100 border-b">
+                        <tr>
+                            <th class="p-4">Код</th>
+                            <th class="p-4">Назва товару</th>
+                            <th class="p-4">Ціна (грн)</th>
+                            <th class="p-4 text-center">Замовити</th>
+                        </tr>
+                    </thead>
+                    <tbody id="product-list"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="cart-modal" class="hidden fixed inset-0 bg-black bg-opacity-60 z-[60] flex justify-end">
+        <div class="bg-white w-full max-w-md h-full p-6 overflow-y-auto shadow-2xl transition-all">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-yellow-600">Кошик замовлення</h2>
+                <button onclick="toggleCart()" class="text-4xl text-gray-400">&times;</button>
+            </div>
+            <div id="cart-items" class="space-y-4"></div>
+            
+            <div class="border-t mt-8 pt-6">
+                <div class="flex justify-between text-lg"><span>Сума:</span><span id="total-price">0 грн</span></div>
+                <div id="discount-info" class="text-green-600 font-bold text-sm"></div>
+                <div class="flex justify-between text-3xl font-black mt-2 text-red-600">
+                    <span>ВСЬОГО:</span><span id="final-price">0 грн</span>
+                </div>
+                <button onclick="checkout()" class="w-full bg-green-500 text-white py-4 rounded-xl mt-8 font-bold text-xl hover:bg-green-600 shadow-lg">
+                    ВІДПРАВИТИ В TELEGRAM
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let products = [];
+        let cart = {};
+        let isAdmin = false;
+
+        async function loadProducts() {
+            try {
+                const response = await fetch('data.csv');
+                const data = await response.text();
+                const lines = data.split('\n').filter(l => l.trim() !== "");
+                
+                products = lines.slice(1).map(line => {
+                    const parts = line.split(',');
+                    const sku = parts[0];
+                    const price = parseFloat(parts[parts.length - 1]);
+                    const name = parts.slice(1, -1).join(' '); // Склеюємо назву, якщо там були коми
+                    return { sku, name, price };
+                }).filter(p => p.sku && !isNaN(p.price));
+
+                document.getElementById('stat-count').innerText = products.length;
+                renderProducts(products);
+            } catch (e) { alert("Помилка: Файл data.csv не знайдено!"); }
+        }
+
+        function renderProducts(items) {
+            const list = document.getElementById('product-list');
+            list.innerHTML = items.map(p => `
+                <tr class="border-b hover:bg-yellow-50 transition">
+                    <td class="p-4 text-xs font-mono text-gray-400">${p.sku}</td>
+                    <td class="p-4 font-semibold">${p.name}</td>
+                    <td class="p-4">
+                        ${isAdmin ? `<input type="number" value="${p.price}" onchange="changePrice('${p.sku}', this.value)" class="w-20 border p-1 rounded bg-yellow-100">` : `<span class="font-bold text-yellow-700">${p.price}</span>`}
+                    </td>
+                    <td class="p-4">
+                        <div class="flex items-center justify-center gap-3 bg-gray-100 rounded-full p-1">
+                            <button onclick="updateCart('${p.sku}', -1)" class="w-8 h-8 flex items-center justify-center bg-white rounded-full shadow hover:bg-red-100">-</button>
+                            <span id="qty-${p.sku}" class="font-bold w-6 text-center text-lg">${cart[p.sku] || 0}</span>
+                            <button onclick="updateCart('${p.sku}', 1)" class="w-8 h-8 flex items-center justify-center bg-yellow-400 rounded-full shadow hover:bg-yellow-500 text-white">+</button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function updateCart(sku, delta) {
+            cart[sku] = (cart[sku] || 0) + delta;
+            if (cart[sku] <= 0) delete cart[sku];
+            if (document.getElementById(`qty-${sku}`)) document.getElementById(`qty-${sku}`).innerText = cart[sku] || 0;
+            updateCartUI();
+        }
+
+        function updateCartUI() {
+            const count = Object.values(cart).reduce((a, b) => a + b, 0);
+            document.getElementById('cart-count').innerText = count;
+            
+            let total = 0;
+            const container = document.getElementById('cart-items');
+            container.innerHTML = '';
+
+            for (let sku in cart) {
+                const p = products.find(i => i.sku === sku);
+                const sum = p.price * cart[sku];
+                total += sum;
+                container.innerHTML += `
+                    <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                        <div class="flex-1 pr-4"><p class="font-bold text-sm">${p.name}</p></div>
+                        <div class="text-right">
+                            <p class="font-bold text-yellow-600">${sum.toFixed(2)}</p>
+                            <p class="text-xs text-gray-400">${cart[sku]} x ${p.price}</p>
+                        </div>
+                    </div>
+                `;
+            }
+
+            let discount = total >= 10000 ? 0.05 : (total >= 5000 ? 0.03 : 0);
+            let final = total * (1 - discount);
+            
+            document.getElementById('total-price').innerText = total.toFixed(2) + " грн";
+            document.getElementById('final-price').innerText = final.toFixed(2) + " грн";
+            document.getElementById('stat-total').innerText = final.toFixed(2) + " грн";
+            document.getElementById('discount-info').innerText = discount > 0 ? `Знижка ${(discount*100).toFixed(0)}% активована!` : "";
+        }
+
+        function loginAdmin() {
+            let pass = prompt("Введіть пароль адміна:");
+            if (pass === "admin123") {
+                isAdmin = true;
+                document.getElementById('admin-panel').style.display = 'block';
+                renderProducts(products);
+                alert("Режим адміна активовано!");
+            } else { alert("Невірний пароль!"); }
+        }
+
+        function logoutAdmin() {
+            isAdmin = false;
+            document.getElementById('admin-panel').style.display = 'none';
+            renderProducts(products);
+        }
+
+        function changePrice(sku, newPrice) {
+            const p = products.find(i => i.sku === sku);
             if (p) {
-                count += cart[id];
-                total += Math.round(p.price * 1.5) * cart[id];
+                p.price = parseFloat(newPrice);
+                updateCartUI();
             }
         }
-        document.getElementById('cartCount').innerText = count;
-        document.getElementById('finalSum').innerText = total + ' грн';
-        document.getElementById('orderBar').style.transform = count > 0 ? 'translateY(0)' : 'translateY(100%)';
-    }
 
-    function sendOrder() {
-        let msg = "Trend Electro — Замовлення:%0A";
-        for (let id in cart) {
-            const p = products.find(i => i.id == id);
-            msg += `• ${p.name} (${cart[id]}шт.)%0A`;
+        function checkout() {
+            const user = JSON.parse(localStorage.getItem('trend_user') || '{}');
+            let msg = `🛒 Trend Electro: ЗАМОВЛЕННЯ\n👤 Клієнт: ${user.name || 'Гість'}\n📞 Тел: ${user.phone || '-'}\n\n`;
+            for (let sku in cart) {
+                const p = products.find(i => i.sku === sku);
+                msg += `🔹 ${p.name} | ${cart[sku]} шт. = ${ (p.price * cart[sku]).toFixed(2) }\n`;
+            }
+            msg += `\n🔥 РАЗОМ: ${document.getElementById('final-price').innerText}`;
+            window.open(`https://t.me/share/url?url=${encodeURIComponent(msg)}`, '_blank');
         }
-        msg += `%0A💰 РАЗОМ: ${document.getElementById('finalSum').innerText}`;
-        window.open(`https://t.me/sviatko86?text=${msg}`, '_blank');
-    }
 
-    window.onload = loadData;
-</script>
+        document.getElementById('search').addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            renderProducts(products.filter(p => p.name.toLowerCase().includes(term) || p.sku.toLowerCase().includes(term)));
+        });
+
+        function saveProfile() {
+            localStorage.setItem('trend_user', JSON.stringify({ name: document.getElementById('user-name').value, phone: document.getElementById('user-phone').value }));
+            alert("Профіль збережено!");
+        }
+
+        function toggleCart() { document.getElementById('cart-modal').classList.toggle('hidden'); }
+        function toggleCabinet() { document.getElementById('cabinet').classList.toggle('hidden'); }
+
+        window.onload = loadProducts;
+    </script>
 </body>
 </html>
