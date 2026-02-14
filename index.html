@@ -9,124 +9,101 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
         body { font-family: 'Inter', sans-serif; background-color: #0f172a; color: white; }
-        .category-pill.active { background: #facc15; color: #000; border-color: #facc15; box-shadow: 0 0 15px rgba(250, 204, 21, 0.3); }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
     </style>
 </head>
 <body class="pb-32">
 
-<header class="bg-slate-800/95 backdrop-blur-md border-b border-slate-700 sticky top-0 z-50 p-4">
-    <div class="container mx-auto">
-        <div class="flex justify-between items-center mb-4">
-            <div class="flex items-center gap-3">
-                <div class="bg-yellow-400 p-2 rounded-xl text-black shadow-lg"><i class="fas fa-bolt"></i></div>
-                <h1 class="text-xl font-black uppercase italic tracking-tighter">Trend <span class="text-yellow-500">Electro</span></h1>
-            </div>
-            <div id="cartBtn" class="bg-yellow-400 text-black px-5 py-2 rounded-2xl flex items-center gap-2 font-black cursor-pointer shadow-lg active:scale-95 transition-all">
-                <i class="fas fa-shopping-bag"></i> <span id="cartCount">0</span>
-            </div>
-        </div>
-        
-        <input type="text" id="searchInput" oninput="render()" placeholder="Шукати за назвою або кодом..." class="w-full bg-slate-700 border border-slate-600 rounded-2xl py-3 px-5 outline-none focus:ring-2 focus:ring-yellow-400 text-white mb-4">
-
-        <div id="categoryList" class="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
-            <button onclick="setCategory('all', this)" class="category-pill active px-5 py-2 rounded-full border border-slate-600 whitespace-nowrap text-sm font-bold transition-all">Всі товари</button>
-            <button onclick="setCategory('ламп|led|освітл', this)" class="category-pill px-5 py-2 rounded-full border border-slate-600 whitespace-nowrap text-sm font-bold transition-all">Освітлення</button>
-            <button onclick="setCategory('корпус|світильник', this)" class="category-pill px-5 py-2 rounded-full border border-slate-600 whitespace-nowrap text-sm font-bold transition-all">Корпуси/Світильники</button>
-        </div>
+<header class="bg-slate-800 p-4 sticky top-0 z-50 border-b border-slate-700">
+    <div class="container mx-auto flex justify-between items-center">
+        <h1 class="text-xl font-black uppercase italic italic">Trend <span class="text-yellow-500">Electro</span></h1>
+        <div id="cartCount" class="bg-yellow-400 text-black px-4 py-1 rounded-full font-bold">0</div>
     </div>
 </header>
 
-<main class="container mx-auto px-4 py-8">
-    <div id="loader" class="text-center py-20">
-        <div class="inline-block animate-spin mb-4 text-yellow-400 text-5xl"><i class="fas fa-circle-notch"></i></div>
-        <p id="status" class="font-black text-slate-500 uppercase tracking-widest text-sm">Синхронізація Trend Electro...</p>
+<main class="container mx-auto px-4 py-10">
+    <div id="loader" class="text-center">
+        <div class="inline-block animate-spin mb-4 text-yellow-400 text-4xl"><i class="fas fa-spinner"></i></div>
+        <p id="status" class="text-slate-400 font-bold uppercase tracking-widest text-xs">Завантаження...</p>
+        <div id="debug" class="mt-10 p-4 bg-black/50 rounded-xl text-left text-[10px] font-mono text-green-400 hidden overflow-auto max-h-60"></div>
     </div>
-    <div id="grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"></div>
+    <div id="grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"></div>
 </main>
-
-<div id="orderBar" class="fixed bottom-0 left-0 right-0 bg-white p-6 shadow-2xl transform translate-y-full transition-all duration-500 z-50 rounded-t-[2.5rem] text-slate-900">
-    <div class="container mx-auto flex justify-between items-center font-bold">
-        <div>
-            <p class="text-[10px] font-black uppercase text-slate-400">Всього до сплати:</p>
-            <span id="finalSum" class="text-3xl font-black italic">0 грн</span>
-        </div>
-        <button onclick="sendOrder()" class="bg-blue-600 text-white px-10 py-4 rounded-2xl font-black flex items-center gap-3 shadow-xl active:scale-95 transition-all">
-            <i class="fab fa-telegram-plane"></i> ЗАМОВИТИ
-        </button>
-    </div>
-</div>
 
 <script>
     const MARKUP = 1.5;
     let products = [];
-    let cart = {};
-    let currentFilter = 'all';
 
     async function loadData() {
         const status = document.getElementById('status');
+        const debug = document.getElementById('debug');
+        
         try {
-            const response = await fetch('data.csv?v=' + Date.now());
-            if (!response.ok) throw new Error();
-            const text = await response.text();
+            debug.classList.remove('hidden');
+            debug.innerHTML += "> Спроба завантажити data.csv...<br>";
             
-            const rows = text.split('\n');
+            const response = await fetch('data.csv?v=' + Date.now());
+            
+            debug.innerHTML += "> Статус відповіді: " + response.status + " " + response.statusText + "<br>";
+            
+            if (!response.ok) throw new Error("Файл не знайдено на сервері");
+
+            const text = await response.text();
+            debug.innerHTML += "> Отримано тексту: " + text.length + " символів<br>";
+            debug.innerHTML += "> Перші 50 символів: " + text.substring(0, 50).replace(/\n/g, ' [Enter] ') + "<br>";
+
+            const rows = text.split('\n').filter(r => r.trim() !== "");
+            debug.innerHTML += "> Знайдено рядків: " + rows.length + "<br>";
+
             products = rows.map((row, index) => {
-                if (index === 0 || !row.trim()) return null;
+                if (index === 0) return null; // Пропускаємо шапку
 
-                // Використовуємо табуляцію або кому як розділювач
-                let parts = row.split('\t'); 
-                if (parts.length < 3) parts = row.split(',');
+                // Пробуємо різні розділювачі: Табуляція, потім Кома
+                let cols = row.split('\t');
+                if (cols.length < 2) cols = row.split(',');
 
-                // Якщо розділювачів забагато (через коми в назві), беремо перший як Код, останній як Ціну, а все між ними як Назву
-                const sku = parts[0].trim();
-                const priceStr = parts[parts.length - 1].replace(',', '.').trim();
-                const name = parts.slice(1, -1).join(', ').replace(/"/g, '').trim();
-                const priceBase = parseFloat(priceStr);
+                if (cols.length < 2) return null;
 
-                if (!name || isNaN(priceBase)) return null;
+                const sku = cols[0].trim();
+                const priceRaw = cols[cols.length - 1].replace(',', '.').trim();
+                const priceBase = parseFloat(priceRaw);
+                const name = cols.slice(1, -1).join(', ').trim() || cols[1];
 
-                return {
-                    id: index,
-                    sku: sku,
-                    name: name,
-                    price: Math.round(priceBase * MARKUP)
-                };
+                if (!isNaN(priceBase)) {
+                    return { sku, name, price: Math.round(priceBase * MARKUP) };
+                }
+                return null;
             }).filter(p => p !== null);
 
+            debug.innerHTML += "> Успішно оброблено товарів: " + products.length + "<br>";
+
             if (products.length > 0) {
-                document.getElementById('loader').style.display = 'none';
+                document.getElementById('loader').classList.add('hidden');
                 render();
             } else {
-                status.innerText = "Файл завантажено, але дані не розпізнано";
+                status.innerText = "Товари не розпізнані. Перевір формат файлу.";
             }
-        } catch (e) {
-            status.innerHTML = "Помилка зв'язку з базою data.csv";
-        }
-    }
 
-    function setCategory(filter, btn) {
-        currentFilter = filter;
-        document.querySelectorAll('.category-pill').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        render();
+        } catch (e) {
+            status.innerHTML = "<span class='text-red-500'>ПОМИЛКА!</span>";
+            debug.innerHTML += "<br><span class='text-red-500'>!!! ПОМИЛКА: " + e.message + "</span>";
+        }
     }
 
     function render() {
-        const query = document.getElementById('searchInput').value.toLowerCase();
         const grid = document.getElementById('grid');
-        let filtered = products.filter(p => p.name.toLowerCase().includes(query) || p.sku.toLowerCase().includes(query));
-        
-        if (currentFilter !== 'all') {
-            const regex = new RegExp(currentFilter, 'i');
-            filtered = filtered.filter(p => regex.test(p.name));
-        }
-
-        grid.innerHTML = filtered.slice(0, 400).map(p => `
-            <div class="bg-slate-800 p-6 rounded-[2rem] border border-slate-700 flex flex-col justify-between hover:border-yellow-400 transition-all shadow-lg group">
-                <div>
-                    <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-2">${p.sku}</span>
-                    <h3 class="font-bold text-sm leading-tight text-slate-200 line-clamp-3 mb-4 group-hover:text-white">${p.name}</h3>
+        grid.innerHTML = products.map(p => `
+            <div class="bg-slate-800 p-4 rounded-2xl border border-slate-700">
+                <div class="text-[9px] text-slate-500 font-bold uppercase">${p.sku}</div>
+                <div class="text-sm font-bold my-2 h-10 overflow-hidden">${p.name}</div>
+                <div class="flex justify-between items-center mt-4">
+                    <div class="text-xl font-black text-yellow-500">${p.price} грн</div>
+                    <button class="bg-yellow-400 text-black p-2 rounded-lg text-xs font-bold">В кошик</button>
                 </div>
-                <div class="flex justify-between items-center pt-4 border-t border-slate-700">
-                    <span class="text-2xl font-black italic text-white">${p.price} <small class="text-[10px] text-slate-400 upp
+            </div>
+        `).join('');
+    }
+
+    window.onload = loadData;
+</script>
+</body>
+</html>
