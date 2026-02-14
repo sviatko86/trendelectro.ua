@@ -3,99 +3,153 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trend Electro — Debug Mode</title>
+    <title>Trend Electro — Каталог</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        body { background: #0f172a; color: white; font-family: sans-serif; p: 20px; }
-        #debug-log { background: #000; color: #0f0; padding: 15px; border-radius: 10px; font-family: monospace; font-size: 12px; margin-bottom: 20px; border: 1px solid #334155; }
-        .error { color: #ff4444; font-weight: bold; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #0f172a; color: white; }
+        .product-card { background: #1e293b; border-radius: 1.5rem; border: 1px solid #334155; transition: 0.3s; }
+        .product-card:hover { border-color: #fbbf24; }
     </style>
 </head>
-<body>
+<body class="pb-40">
 
-    <div class="max-w-2xl mx-auto pt-10">
-        <h1 class="text-2xl font-black mb-4">Trend <span class="text-yellow-400">Electro</span> Status</h1>
-        
-        <div id="debug-log">
-            > Очікування запуску...<br>
+<header class="bg-slate-900/90 backdrop-blur-md sticky top-0 z-50 border-b border-slate-800 p-4">
+    <div class="container mx-auto">
+        <div class="flex justify-between items-center mb-4">
+            <div class="flex items-center gap-3">
+                <div class="bg-yellow-400 p-2 rounded-xl text-black shadow-lg"><i class="fas fa-bolt"></i></div>
+                <h1 class="text-xl font-black uppercase italic tracking-tighter">Trend <span class="text-yellow-500">Electro</span></h1>
+            </div>
+            <div class="bg-yellow-400 text-black px-4 py-1.5 rounded-full font-black text-sm shadow-lg">
+                <i class="fas fa-shopping-bag"></i> <span id="cartCount">0</span>
+            </div>
         </div>
-
-        <div id="grid" class="grid grid-cols-2 gap-4"></div>
+        <input type="text" id="searchInput" oninput="render()" placeholder="Шукати за назвою або артикулом..." 
+               class="w-full bg-slate-800 border border-slate-700 rounded-xl py-3 px-4 text-sm outline-none focus:ring-2 focus:ring-yellow-400">
     </div>
+</header>
+
+<main class="container mx-auto px-4 py-6">
+    <div id="loader" class="text-center py-20">
+        <div class="inline-block animate-spin text-yellow-400 text-5xl mb-4"><i class="fas fa-circle-notch"></i></div>
+        <p class="font-black text-slate-500 uppercase tracking-widest text-[10px]">Trend Electro Sync...</p>
+    </div>
+    <div id="grid" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div>
+</main>
+
+<div id="orderBar" class="fixed bottom-0 left-0 right-0 bg-slate-900 p-6 shadow-2xl transform translate-y-full transition-all duration-500 z-50 border-t border-slate-800">
+    <div class="container mx-auto flex justify-between items-center">
+        <div>
+            <p class="text-[10px] font-black uppercase text-slate-400 italic">До сплати:</p>
+            <span id="finalSum" class="text-2xl font-black text-white italic">0 грн</span>
+        </div>
+        <button onclick="sendOrder()" class="bg-yellow-400 text-black px-8 py-4 rounded-2xl font-black text-sm active:scale-95 shadow-xl uppercase">
+            Замовити в Telegram
+        </button>
+    </div>
+</div>
 
 <script>
-    const log = document.getElementById('debug-log');
-    
-    function addLog(msg, isError = false) {
-        log.innerHTML += `<span class="${isError ? 'error' : ''}">${isError ? '❌' : '✅'} ${msg}</span><br>`;
-    }
+    let products = [];
+    let cart = {};
 
-    async function start() {
-        addLog("Спроба знайти файл data.csv...");
-        
+    // --- НАЛАШТУВАННЯ ЦІНИ ---
+    const MARKUP = 1.0; // 1.0 = ціна як у файлі. 1.5 = +50%. Змінюй це число!
+
+    async function loadData() {
         try {
             const response = await fetch('data.csv?v=' + Date.now());
-            
-            if (!response.ok) {
-                addLog(`Файл не знайдено! Статус: ${response.status}`, true);
-                addLog("ПЕРЕВІР: Чи файл на GitHub називається саме data.csv (маленькими літерами)?", true);
-                return;
-            }
-            
-            addLog("Файл знайдено. Читаю текст...");
             const text = await response.text();
-            
-            if (!text || text.length < 10) {
-                addLog("Файл порожній або занадто малий!", true);
-                return;
-            }
-            
-            addLog(`Отримано ${text.length} символів. Починаю розбір рядків...`);
-            const lines = text.split('\n').filter(l => l.trim() !== "");
-            addLog(`Знайдено рядків: ${lines.length}`);
+            const rows = text.split('\n').filter(row => row.trim() !== "");
 
-            let html = "";
-            let count = 0;
+            products = rows.map((row, index) => {
+                if (index === 0) return null; // ігноруємо шапку
 
-            lines.forEach((line, i) => {
-                if (i === 0) return; // пропуск шапки
+                // РОЗУМНИЙ ПАРСИНГ:
+                const parts = row.split(',');
+                if (parts.length < 2) return null;
 
-                // Спроба розбити по комі
-                const parts = line.split(',');
-                if (parts.length >= 2) {
-                    const sku = parts[0].trim();
-                    const priceRaw = parts[parts.length - 1].replace(/[^0-9.]/g, '');
-                    const price = parseFloat(priceRaw);
-                    const name = parts.slice(1, -1).join(', ').trim() || "Без назви";
+                // Ціна — це ЗАВЖДИ останній елемент
+                const rawPrice = parts[parts.length - 1].replace(/[^0-9.]/g, '');
+                const priceBase = parseFloat(rawPrice);
 
-                    if (!isNaN(price)) {
-                        const finalPrice = Math.round(price * 1.5);
-                        html += `
-                            <div class="bg-slate-800 p-4 rounded-xl border border-slate-700">
-                                <div class="text-[10px] text-slate-500">${sku}</div>
-                                <div class="text-xs font-bold mb-2">${name}</div>
-                                <div class="text-yellow-400 font-black">${finalPrice} грн</div>
-                            </div>
-                        `;
-                        count++;
-                    }
-                }
-            });
+                // Артикул — перший елемент
+                const sku = parts[0].trim();
 
-            if (count === 0) {
-                addLog("НЕ ВДАЛОСЯ розпізнати жодного товару. Перевір формат CSV!", true);
-            } else {
-                addLog(`Успішно завантажено товарів: ${count}`);
-                document.getElementById('grid').innerHTML = html;
-                log.style.borderColor = "#22c55e"; // Зелений колір, якщо все ок
-            }
+                // Назва — все, що між першим і останнім елементом (включаючи коми)
+                const name = parts.slice(1, -1).join(', ').trim() || parts[1];
 
-        } catch (err) {
-            addLog(`Критична помилка коду: ${err.message}`, true);
+                if (isNaN(priceBase)) return null;
+
+                return { id: index, sku, name, basePrice: priceBase };
+            }).filter(p => p !== null);
+
+            document.getElementById('loader').classList.add('hidden');
+            render();
+        } catch (e) {
+            document.getElementById('loader').innerHTML = "<p class='text-red-500'>Помилка завантаження бази!</p>";
         }
     }
 
-    start();
+    function render() {
+        const query = document.getElementById('searchInput').value.toLowerCase();
+        const grid = document.getElementById('grid');
+        
+        const filtered = products.filter(p => 
+            p.name.toLowerCase().includes(query) || p.sku.toLowerCase().includes(query)
+        );
+
+        grid.innerHTML = filtered.map(p => {
+            const displayPrice = Math.round(p.basePrice * MARKUP);
+            return `
+                <div class="product-card p-4 flex flex-col justify-between">
+                    <div>
+                        <div class="text-[9px] font-bold text-slate-500 mb-1 uppercase tracking-tighter">${p.sku}</div>
+                        <h3 class="font-bold text-[11px] leading-tight text-white line-clamp-3 mb-4 italic">${p.name}</h3>
+                    </div>
+                    <div class="pt-3 border-t border-slate-700">
+                        <div class="text-xl font-black italic text-yellow-400 mb-3">${displayPrice} <small class="text-[9px] not-italic text-white">грн</small></div>
+                        <button onclick="addToCart(${p.id})" class="w-full bg-yellow-400 text-black py-2 rounded-xl text-[10px] font-black active:scale-95 transition-all uppercase">
+                            В кошик
+                        </button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function addToCart(id) {
+        cart[id] = (cart[id] || 0) + 1;
+        updateUI();
+    }
+
+    function updateUI() {
+        let count = 0, total = 0;
+        for (let id in cart) {
+            const p = products.find(prod => prod.id == id);
+            if (p) {
+                count += cart[id]; 
+                total += Math.round(p.basePrice * MARKUP) * cart[id];
+            }
+        }
+        document.getElementById('cartCount').innerText = count;
+        document.getElementById('finalSum').innerText = total + ' грн';
+        document.getElementById('orderBar').classList.toggle('translate-y-full', count === 0);
+    }
+
+    function sendOrder() {
+        let text = "Нове замовлення Trend Electro:%0A%0A";
+        for (let id in cart) {
+            const p = products.find(prod => prod.id == id);
+            text += `• ${p.sku} | ${p.name} — ${cart[id]} шт.%0A`;
+        }
+        text += `%0A💰 *РАЗОМ: ${document.getElementById('finalSum').innerText}*`;
+        window.open(`https://t.me/sviatko86?text=${text}`, '_blank');
+    }
+
+    window.onload = loadData;
 </script>
 </body>
 </html>
