@@ -9,8 +9,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #0f172a; color: white; -webkit-tap-highlight-color: transparent; }
-        .category-pill.active { background: #facc15; color: #000; border-color: #facc15; box-shadow: 0 0 15px rgba(250, 204, 21, 0.4); }
+        body { font-family: 'Inter', sans-serif; background-color: #0f172a; color: white; }
+        .category-pill.active { background: #facc15; color: #000; border-color: #facc15; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
     </style>
 </head>
@@ -19,24 +19,23 @@
 <header class="bg-slate-800/90 backdrop-blur-md border-b border-slate-700 sticky top-0 z-50 p-4">
     <div class="container mx-auto">
         <div class="flex justify-between items-center mb-4">
-            <div class="flex items-center gap-3 cursor-pointer" onclick="location.reload()">
+            <div class="flex items-center gap-3">
                 <div class="bg-yellow-400 p-2 rounded-xl text-black shadow-lg"><i class="fas fa-bolt"></i></div>
-                <h1 class="text-xl font-black uppercase italic tracking-tighter text-white">Trend <span class="text-yellow-500">Electro</span></h1>
+                <h1 class="text-xl font-black uppercase italic tracking-tighter">Trend <span class="text-yellow-500">Electro</span></h1>
             </div>
-            <div id="cartBtn" class="bg-yellow-400 text-black px-5 py-2 rounded-2xl flex items-center gap-2 font-black cursor-pointer shadow-lg active:scale-95 transition-all">
+            <div id="cartBtn" class="bg-yellow-400 text-black px-5 py-2 rounded-2xl flex items-center gap-2 font-black cursor-pointer shadow-lg">
                 <i class="fas fa-shopping-bag"></i> <span id="cartCount">0</span>
             </div>
         </div>
         
-        <input type="text" id="searchInput" oninput="render()" placeholder="Шукати за назвою або кодом..." class="w-full bg-slate-700 border border-slate-600 rounded-2xl py-3 px-5 outline-none focus:ring-2 focus:ring-yellow-400 text-white mb-4">
+        <input type="text" id="searchInput" oninput="render()" placeholder="Шукати товар..." class="w-full bg-slate-700 border border-slate-600 rounded-2xl py-3 px-5 outline-none focus:ring-2 focus:ring-yellow-400 text-white mb-4">
 
         <div id="categoryList" class="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
-            <button onclick="setCategory('all', this)" class="category-pill active px-5 py-2 rounded-full border border-slate-600 whitespace-nowrap text-sm font-bold transition-all">Всі товари</button>
-            <button onclick="setCategory('ламп|led|освітл', this)" class="category-pill px-5 py-2 rounded-full border border-slate-600 whitespace-nowrap text-sm font-bold transition-all">Освітлення</button>
-            <button onclick="setCategory('кабель|провід|дріт', this)" class="category-pill px-5 py-2 rounded-full border border-slate-600 whitespace-nowrap text-sm font-bold transition-all">Кабель</button>
-            <button onclick="setCategory('розет|вимик', this)" class="category-pill px-5 py-2 rounded-full border border-slate-600 whitespace-nowrap text-sm font-bold transition-all">Розетки</button>
-            <button onclick="setCategory('автомат|диф|пзв', this)" class="category-pill px-5 py-2 rounded-full border border-slate-600 whitespace-nowrap text-sm font-bold transition-all">Автоматика</button>
-            <button onclick="setCategory('інструмент|викрут', this)" class="category-pill px-5 py-2 rounded-full border border-slate-600 whitespace-nowrap text-sm font-bold transition-all">Інструмент</button>
+            <button onclick="setCategory('all', this)" class="category-pill active px-4 py-2 rounded-full border border-slate-600 whitespace-nowrap text-xs font-bold transition-all">Всі товари</button>
+            <button onclick="setCategory('ламп|led|освітл', this)" class="category-pill px-4 py-2 rounded-full border border-slate-600 whitespace-nowrap text-xs font-bold transition-all">Освітлення</button>
+            <button onclick="setCategory('кабель|провід', this)" class="category-pill px-4 py-2 rounded-full border border-slate-600 whitespace-nowrap text-xs font-bold transition-all">Кабель</button>
+            <button onclick="setCategory('розет|вимик', this)" class="category-pill px-4 py-2 rounded-full border border-slate-600 whitespace-nowrap text-xs font-bold transition-all">Розетки</button>
+            <button onclick="setCategory('автомат|диф', this)" class="category-pill px-4 py-2 rounded-full border border-slate-600 whitespace-nowrap text-xs font-bold transition-all">Автоматика</button>
         </div>
     </div>
 </header>
@@ -44,19 +43,15 @@
 <main class="container mx-auto px-4 py-8">
     <div id="loader" class="text-center py-20">
         <div id="spinner" class="inline-block animate-spin mb-4 text-yellow-400 text-5xl"><i class="fas fa-circle-notch"></i></div>
-        <p id="status" class="font-black text-slate-500 uppercase tracking-widest text-sm">Синхронізація Trend Electro...</p>
-        <p id="debug-info" class="text-xs text-slate-700 mt-4"></p>
+        <p id="status" class="font-black text-slate-500 uppercase tracking-widest text-sm italic">Завантаження Trend Electro...</p>
     </div>
     <div id="grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"></div>
 </main>
 
-<div id="orderBar" class="fixed bottom-0 left-0 right-0 bg-white p-6 shadow-2xl transform translate-y-full transition-all duration-500 z-50 rounded-t-[2.5rem] text-slate-900">
-    <div class="container mx-auto flex justify-between items-center font-['Inter']">
-        <div>
-            <p class="text-[10px] font-black uppercase text-slate-400">До сплати:</p>
-            <span id="finalSum" class="text-3xl font-black italic">0 грн</span>
-        </div>
-        <button onclick="sendOrder()" class="bg-blue-600 text-white px-10 py-4 rounded-2xl font-black flex items-center gap-3 shadow-xl hover:bg-blue-700 active:scale-95 transition-all">
+<div id="orderBar" class="fixed bottom-0 left-0 right-0 bg-white p-6 shadow-2xl transform translate-y-full transition-all duration-500 z-50 rounded-t-[2rem] text-slate-900">
+    <div class="container mx-auto flex justify-between items-center">
+        <span id="finalSum" class="text-2xl font-black italic">0 грн</span>
+        <button onclick="sendOrder()" class="bg-blue-600 text-white px-8 py-3 rounded-2xl font-black flex items-center gap-2 active:scale-95 transition-all">
             <i class="fab fa-telegram-plane"></i> ЗАМОВИТИ
         </button>
     </div>
@@ -70,50 +65,66 @@
 
     async function loadData() {
         const status = document.getElementById('status');
-        const debug = document.getElementById('debug-info');
-        
-        // Автовизначення шляху до файлу
-        const filePath = window.location.pathname.includes('trendelectro.ua') 
-            ? '/trendelectro.ua/data.csv' 
-            : 'data.csv';
-
-        debug.innerText = "Шукаю файл за адресою: " + filePath;
-
         try {
-            const response = await fetch(filePath + '?v=' + Date.now());
-            if (!response.ok) throw new Error('Статус: ' + response.status);
+            // Завантажуємо текст файлу напряму, щоб уникнути помилок шляху
+            const resp = await fetch('data.csv?v=' + Date.now());
+            if (!resp.ok) throw new Error("File not found");
+            const text = await resp.text();
             
-            const csvText = await response.text();
-            
-            Papa.parse(csvText, {
-                header: false,
-                skipEmptyLines: true,
-                complete: function(results) {
-                    products = results.data.map((row, index) => {
-                        const line = row.join(' ').trim();
-                        if (!line || index === 0) return null;
+            // Ручне розбиття рядків, щоб ігнорувати помилки PapaParse
+            const lines = text.split('\n');
+            products = lines.map((line, index) => {
+                if (index === 0 || !line.trim()) return null;
+                
+                // Спліт по комах, але враховуємо, що в назвах теж можуть бути коми
+                const parts = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/); 
+                if (parts.length < 2) return null;
 
-                        const parts = line.split(/\t| {2,}/).filter(x => x.trim() !== "");
-                        if (parts.length < 2) return null;
+                const sku = parts[0].replace(/"/g, '').trim();
+                const name = parts[1] ? parts[1].replace(/"/g, '').trim() : "Товар без назви";
+                
+                // Шукаємо ціну в останній або передостанній колонці
+                const rawPrice = parts[parts.length - 1].replace(/"/g, '').replace(',', '.').trim();
+                const basePrice = parseFloat(rawPrice);
 
-                        const sku = parts[0];
-                        const rawPrice = parts[parts.length - 1].replace(',', '.');
-                        const basePrice = parseFloat(rawPrice);
-                        const name = parts.slice(1, -1).join(' ');
+                if (isNaN(basePrice)) return null;
 
-                        if (!name || isNaN(basePrice)) return null;
+                return {
+                    id: index,
+                    sku: sku,
+                    name: name,
+                    price: Math.round(basePrice * MARKUP)
+                };
+            }).filter(p => p !== null);
 
-                        return { id: index, sku, name, price: Math.round(basePrice * MARKUP) };
-                    }).filter(p => p !== null);
-
-                    if (products.length === 0) {
-                        status.innerText = "У файлі data.csv немає товарів!";
-                    } else {
-                        document.getElementById('loader').classList.add('hidden');
-                        render();
-                    }
-                }
-            });
+            if (products.length > 0) {
+                document.getElementById('loader').style.display = 'none';
+                render();
+            } else {
+                status.innerText = "Файл порожній або пошкоджений";
+            }
         } catch (e) {
-            status.innerHTML = `<span class="text-red-500 text-xl font-bold">ПОМИЛКА ЗАВАНТАЖЕННЯ!</span><br>
-                               <span class="text-sm text-slate-400 mt-2 block">Переконайся, що файл data.csv лежить в репозиторії поруч з ind
+            status.innerHTML = "Помилка завантаження бази даних!<br><small>Перевірте файл data.csv</small>";
+            document.getElementById('spinner').style.display = 'none';
+        }
+    }
+
+    function setCategory(filter, btn) {
+        currentFilter = filter;
+        document.querySelectorAll('.category-pill').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        render();
+    }
+
+    function render() {
+        const query = document.getElementById('searchInput').value.toLowerCase();
+        const grid = document.getElementById('grid');
+        let filtered = products.filter(p => p.name.toLowerCase().includes(query) || p.sku.toLowerCase().includes(query));
+        
+        if (currentFilter !== 'all') {
+            const regex = new RegExp(currentFilter, 'i');
+            filtered = filtered.filter(p => regex.test(p.name));
+        }
+
+        grid.innerHTML = filtered.slice(0, 300).map(p => `
+            <div class="bg-slate-800 p-5 rounded-[2rem] border border-slate-700 flex flex-col justify-between hover:border-yellow
