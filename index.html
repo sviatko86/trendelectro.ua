@@ -9,35 +9,33 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
-        body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Inter', sans-serif; background-color: #0f172a; color: white; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        .category-pill.active { background: #facc15; color: #000; border-color: #facc15; box-shadow: 0 4px 15px rgba(250, 204, 21, 0.3); }
+        .category-pill.active { background: #facc15; color: #000; border-color: #facc15; }
     </style>
 </head>
-<body class="bg-slate-900 text-white pb-32">
+<body class="pb-32">
 
 <header class="bg-slate-800/90 backdrop-blur-md border-b border-slate-700 sticky top-0 z-50 p-4">
     <div class="container mx-auto">
         <div class="flex justify-between items-center mb-4">
             <div class="flex items-center gap-3 cursor-pointer" onclick="location.reload()">
                 <div class="bg-yellow-400 p-2 rounded-xl text-black shadow-lg"><i class="fas fa-bolt"></i></div>
-                <h1 class="text-xl md:text-2xl font-black uppercase italic tracking-tighter">Trend <span class="text-yellow-500">Electro</span></h1>
+                <h1 class="text-xl font-black uppercase italic tracking-tighter">Trend <span class="text-yellow-500">Electro</span></h1>
             </div>
-            <div id="cartBtn" class="bg-yellow-400 text-black px-5 py-2.5 rounded-2xl flex items-center gap-3 font-black cursor-pointer shadow-lg active:scale-95 transition-all">
+            <div id="cartBtn" class="bg-yellow-400 text-black px-5 py-2 rounded-2xl flex items-center gap-2 font-black cursor-pointer shadow-lg">
                 <i class="fas fa-shopping-bag"></i> <span id="cartCount">0</span>
             </div>
         </div>
         
-        <input type="text" id="searchInput" oninput="render()" placeholder="Пошук (код або назва)..." class="w-full bg-slate-700/50 border border-slate-600 rounded-2xl py-3 px-5 outline-none focus:ring-2 focus:ring-yellow-400 text-white mb-4">
+        <input type="text" id="searchInput" oninput="render()" placeholder="Пошук товару..." class="w-full bg-slate-700 border border-slate-600 rounded-2xl py-3 px-5 outline-none focus:ring-2 focus:ring-yellow-400 text-white mb-4">
 
-        <div id="categoryList" class="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
-            <button onclick="setCategory('all', this)" class="category-pill active px-5 py-2 rounded-full border border-slate-600 whitespace-nowrap text-sm font-bold transition-all">Всі товари</button>
-            <button onclick="setCategory('ламп|led|світло|освітлення', this)" class="category-pill px-5 py-2 rounded-full border border-slate-600 whitespace-nowrap text-sm font-bold transition-all">Освітлення</button>
-            <button onclick="setCategory('кабель|провід|дріт', this)" class="category-pill px-5 py-2 rounded-full border border-slate-600 whitespace-nowrap text-sm font-bold transition-all">Кабель</button>
-            <button onclick="setCategory('розет|вимик', this)" class="category-pill px-5 py-2 rounded-full border border-slate-600 whitespace-nowrap text-sm font-bold transition-all">Розетки</button>
-            <button onclick="setCategory('автомат|диф|пзв', this)" class="category-pill px-5 py-2 rounded-full border border-slate-600 whitespace-nowrap text-sm font-bold transition-all">Автоматика</button>
-            <button onclick="setCategory('бокс|щит', this)" class="category-pill px-5 py-2 rounded-full border border-slate-600 whitespace-nowrap text-sm font-bold transition-all">Щити</button>
-            <button onclick="setCategory('інструмент|викрут|кліщ', this)" class="category-pill px-5 py-2 rounded-full border border-slate-600 whitespace-nowrap text-sm font-bold transition-all">Інструмент</button>
+        <div id="categoryList" class="flex gap-2 overflow-x-auto pb-2 no-scrollbar text-xs font-bold uppercase">
+            <button onclick="setCategory('all', this)" class="category-pill active px-4 py-2 rounded-full border border-slate-600 whitespace-nowrap">Всі</button>
+            <button onclick="setCategory('ламп|led|світло', this)" class="category-pill px-4 py-2 rounded-full border border-slate-600 whitespace-nowrap">Освітлення</button>
+            <button onclick="setCategory('кабель|провід', this)" class="category-pill px-4 py-2 rounded-full border border-slate-600 whitespace-nowrap">Кабель</button>
+            <button onclick="setCategory('розет|вимик', this)" class="category-pill px-4 py-2 rounded-full border border-slate-600 whitespace-nowrap">Розетки</button>
+            <button onclick="setCategory('автомат|диф', this)" class="category-pill px-4 py-2 rounded-full border border-slate-600 whitespace-nowrap">Автоматика</button>
         </div>
     </div>
 </header>
@@ -45,18 +43,15 @@
 <main class="container mx-auto px-4 py-6">
     <div id="loader" class="text-center py-20">
         <div class="inline-block animate-spin mb-4 text-yellow-400 text-4xl"><i class="fas fa-circle-notch"></i></div>
-        <p class="font-black text-slate-500 uppercase tracking-widest text-sm">Синхронізація Trend Electro...</p>
+        <p id="statusText" class="font-black text-slate-500 uppercase tracking-widest text-sm">Синхронізація...</p>
     </div>
-    <div id="grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"></div>
+    <div id="grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"></div>
 </main>
 
-<div id="orderBar" class="fixed bottom-0 left-0 right-0 bg-white p-5 shadow-2xl transform translate-y-full transition-all duration-500 z-50 rounded-t-[2.5rem] text-slate-900">
+<div id="orderBar" class="fixed bottom-0 left-0 right-0 bg-white p-5 shadow-2xl transform translate-y-full transition-all duration-500 z-50 rounded-t-[2rem] text-slate-900">
     <div class="container mx-auto flex justify-between items-center">
-        <div>
-            <p class="text-[10px] font-black uppercase text-slate-400 tracking-widest">До сплати:</p>
-            <span id="finalSum" class="text-2xl font-black italic">0 грн</span>
-        </div>
-        <button onclick="sendOrder()" class="bg-blue-600 hover:bg-blue-500 text-white px-8 py-3.5 rounded-2xl font-black flex items-center gap-3 shadow-lg transition-all active:scale-95">
+        <span id="finalSum" class="text-2xl font-black italic">0 грн</span>
+        <button onclick="sendOrder()" class="bg-blue-600 text-white px-8 py-3 rounded-2xl font-black flex items-center gap-2">
             <i class="fab fa-telegram-plane"></i> ЗАМОВИТИ
         </button>
     </div>
@@ -69,36 +64,42 @@
     let currentFilter = 'all';
 
     function loadData() {
-        Papa.parse('data.csv', {
+        // Додаємо випадкове число до назви файлу, щоб обійти кеш GitHub
+        const url = 'data.csv?v=' + Math.random();
+        
+        Papa.parse(url, {
             download: true,
             header: false,
             skipEmptyLines: 'greedy',
             complete: function(results) {
-                console.log("Raw data received:", results.data.length);
+                if (!results.data || results.data.length === 0) {
+                    document.getElementById('statusText').innerText = "Файл порожній!";
+                    return;
+                }
+                
                 products = results.data.map((row, index) => {
-                    const lineString = row.join(' ').trim();
-                    if (!lineString) return null;
-
-                    // Розбиваємо рядок (таби або 2+ пробіли)
-                    const parts = lineString.split(/\t| {2,}/).filter(x => x.trim() !== "");
+                    const line = row.join(' ').trim();
+                    const parts = line.split(/\t| {2,}/).filter(x => x.trim() !== "");
                     if (parts.length < 2) return null;
 
-                    const sku = parts[0];
                     const rawPrice = parts[parts.length - 1].replace(',', '.');
                     const basePrice = parseFloat(rawPrice);
-                    const name = parts.slice(1, -1).join(' ');
+                    if (isNaN(basePrice)) return null;
 
-                    if (!name || isNaN(basePrice) || basePrice <= 0) return null;
-
-                    return { id: index, sku, name, price: Math.round(basePrice * MARKUP) };
+                    return {
+                        id: index,
+                        sku: parts[0],
+                        name: parts.slice(1, -1).join(' '),
+                        price: Math.round(basePrice * MARKUP)
+                    };
                 }).filter(p => p !== null);
 
-                console.log("Parsed products:", products.length);
                 document.getElementById('loader').classList.add('hidden');
                 render();
             },
-            error: function(err) {
-                document.getElementById('loader').innerHTML = "<p class='text-red-500'>Помилка завантаження бази. Перевірте файл data.csv</p>";
+            error: function() {
+                document.getElementById('statusText').innerText = "Помилка завантаження data.csv!";
+                document.getElementById('statusText').style.color = "red";
             }
         });
     }
@@ -113,9 +114,18 @@
     function render() {
         const query = document.getElementById('searchInput').value.toLowerCase();
         const grid = document.getElementById('grid');
-        
-        let filtered = products.filter(p => 
-            p.name.toLowerCase().includes(query) || p.sku.toLowerCase().includes(query)
-        );
+        let filtered = products.filter(p => p.name.toLowerCase().includes(query) || p.sku.toLowerCase().includes(query));
         
         if (currentFilter !== 'all') {
+            const regex = new RegExp(currentFilter, 'i');
+            filtered = filtered.filter(p => regex.test(p.name));
+        }
+
+        grid.innerHTML = filtered.slice(0, 500).map(p => `
+            <div class="bg-slate-800 p-5 rounded-[2rem] border border-slate-700 flex flex-col justify-between">
+                <div>
+                    <span class="text-[9px] font-black text-slate-500 uppercase mb-1 block">${p.sku}</span>
+                    <h3 class="font-bold text-sm leading-tight text-slate-200 line-clamp-3 mb-4">${p.name}</h3>
+                </div>
+                <div class="flex justify-between items-center pt-4 border-t border-slate-700">
+                    <span class="text-xl font-black italic">${p.price} <small class="text-[10px] text-slate-400">грн</small></span>
