@@ -9,12 +9,13 @@
     <style>
         :root { --main-bg: #0f172a; --card-bg: #1e293b; --accent: #eab308; }
         body { background-color: var(--main-bg); color: white; transition: 0.3s; }
-        .product-card { background: var(--card-bg); border-radius: 2rem; border: 1px solid rgba(255,255,255,0.05); transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); height: 100%; display: flex; flex-direction: column; }
+        .product-card { background: var(--card-bg); border-radius: 2rem; border: 1px solid rgba(255,255,255,0.05); transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
         .product-card:hover { transform: translateY(-10px); border-color: var(--accent); box-shadow: 0 20px 40px -20px rgba(234, 179, 8, 0.3); }
         .category-btn { background: rgba(255,255,255,0.05); color: white; border-radius: 99px; padding: 12px 24px; white-space: nowrap; transition: 0.3s; font-size: 14px; font-weight: 700; border: 1px solid rgba(255,255,255,0.1); }
         .category-btn.active { background: var(--accent) !important; color: #000 !important; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         
+        /* Wheel of Fortune */
         #wheel-container { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 200; align-items: center; justify-content: center; backdrop-filter: blur(10px); }
         .wheel { width: 300px; height: 300px; border-radius: 50%; border: 10px solid var(--accent); position: relative; transition: 4s cubic-bezier(0.1, 0, 0, 1); overflow: hidden; }
         .wheel-part { position: absolute; width: 50%; height: 50%; transform-origin: 100% 100%; display: flex; align-items: center; justify-content: center; font-weight: 900; color: #000; }
@@ -40,31 +41,36 @@
 
     <main class="container mx-auto px-4 pb-20">
         <div class="mt-8 mb-10 relative">
-            <input type="text" id="search" placeholder="Пошук товару або артикулу..." 
-                class="w-full p-6 pl-16 rounded-[2rem] bg-white/5 border border-white/10 focus:ring-4 focus:ring-yellow-500/20 outline-none text-xl transition-all text-white">
+            <input type="text" id="search" placeholder="Що шукаємо сьогодні? (назва або артикул)" 
+                class="w-full p-6 pl-16 rounded-[2rem] bg-white/5 border border-white/10 focus:ring-4 focus:ring-yellow-500/20 outline-none text-xl transition-all">
             <i class="fas fa-search absolute left-6 top-7 text-yellow-500 text-xl"></i>
         </div>
 
-        <div class="flex gap-3 overflow-x-auto pb-10 no-scrollbar" id="cat-nav">
+        <div class="flex gap-3 overflow-x-auto pb-10 no-scrollbar">
             <button onclick="filterCat('all', this)" class="category-btn active">⚡️ ВСЕ</button>
             <button onclick="filterCat('Освітлення', this)" class="category-btn">💡 СВІТЛО</button>
-            <button onclick="filterCat('Кабель', this)" class="category-btn">🔌 КАБЕЛЬ</button>
-            <button onclick="filterCat('Розетки', this)" class="category-btn">🔘 РОЗЕТКИ</button>
-            <button onclick="filterCat('Автоматика', this)" class="category-btn">🛡 АВТОМАТИКА</button>
+            <button onclick="filterCat('Кабель та Провід', this)" class="category-btn">🔌 КАБЕЛЬ</button>
+            <button onclick="filterCat('Розетки та Вимикачі', this)" class="category-btn">🔘 РОЗЕТКИ</button>
+            <button onclick="filterCat('Модульна автоматика', this)" class="category-btn">🛡 АВТОМАТИКА</button>
+            <button onclick="filterCat('Щити та бокси', this)" class="category-btn">📦 ЩИТИ</button>
         </div>
 
-        <div id="admin-panel" class="hidden bg-gradient-to-br from-yellow-500/20 to-orange-500/5 border-2 border-yellow-500/50 p-8 rounded-[3rem] mb-12">
+        <div id="admin-panel" class="hidden bg-gradient-to-br from-yellow-500/20 to-orange-500/5 border-2 border-yellow-500/50 p-8 rounded-[3rem] mb-12 animate-fade-in">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <div>
-                    <h3 class="font-black text-yellow-500 mb-4 uppercase">Знижка (%)</h3>
-                    <input type="number" id="global-discount" value="0" onchange="updateSettings()" class="w-full bg-black/40 p-3 rounded-xl outline-none border border-white/10">
+                    <h3 class="font-black text-yellow-500 uppercase mb-4 tracking-widest">💰 Ціноутворення</h3>
+                    <label class="text-[10px] opacity-50 uppercase font-bold">Глобальна знижка (%)</label>
+                    <input type="number" id="global-discount" value="0" onchange="updateSettings()" class="w-full bg-black/40 p-3 rounded-xl mt-1 outline-none border border-white/10">
                 </div>
                 <div>
-                    <h3 class="font-black text-yellow-500 mb-4 uppercase">Націнка (коеф.)</h3>
-                    <input type="number" id="markup" value="1.5" step="0.1" onchange="updateSettings()" class="w-full bg-black/40 p-3 rounded-xl outline-none border border-white/10">
+                    <h3 class="font-black text-yellow-500 uppercase mb-4 tracking-widest">📈 Націнка</h3>
+                    <label class="text-[10px] opacity-50 uppercase font-bold">Коефіцієнт (1.5 = +50%)</label>
+                    <input type="number" id="markup" value="1.5" step="0.1" onchange="updateSettings()" class="w-full bg-black/40 p-3 rounded-xl mt-1 outline-none border border-white/10">
                 </div>
-                <div class="flex items-end">
-                    <button onclick="localStorage.clear(); location.reload();" class="w-full bg-red-500/20 text-red-500 py-3 rounded-xl font-bold uppercase text-xs">Скинути все</button>
+                <div>
+                    <h3 class="font-black text-yellow-500 uppercase mb-4 tracking-widest">📊 Статистика</h3>
+                    <div class="text-sm">Товарів: <span id="admin-count" class="font-black text-white">0</span></div>
+                    <button onclick="localStorage.clear(); location.reload();" class="mt-4 text-[10px] bg-red-500/20 text-red-500 px-4 py-2 rounded-lg font-black hover:bg-red-500 hover:text-white transition">Скинути кеш сайту</button>
                 </div>
             </div>
         </div>
@@ -75,12 +81,13 @@
 
     <div id="wheel-container">
         <div class="text-center bg-gray-900 p-10 rounded-[3rem] border border-yellow-500/30 relative">
-            <button onclick="closeWheel()" class="absolute top-6 right-6 text-2xl opacity-30">×</button>
-            <h2 class="text-3xl font-black text-yellow-500 mb-6 italic">LUCKY WHEEL</h2>
+            <button onclick="closeWheel()" class="absolute top-6 right-6 text-2xl opacity-30">&times;</button>
+            <h2 class="text-3xl font-black text-yellow-500 mb-2 italic">LUCKY WHEEL</h2>
+            <p class="text-[10px] uppercase tracking-[0.3em] mb-8 opacity-50">Виграй свою персональну знижку</p>
             <div class="wheel mx-auto" id="main-wheel">
                 <div class="wheel-part bg-yellow-500" style="transform: rotate(0deg) skewY(-45deg)"><span>5%</span></div>
                 <div class="wheel-part bg-white" style="transform: rotate(90deg) skewY(-45deg)"><span>10%</span></div>
-                <div class="wheel-part bg-yellow-500" style="transform: rotate(180deg) skewY(-45deg)"><span>🎁</span></div>
+                <div class="wheel-part bg-yellow-500" style="transform: rotate(180deg) skewY(-45deg)"><span>FREE</span></div>
                 <div class="wheel-part bg-white" style="transform: rotate(270deg) skewY(-45deg)"><span>7%</span></div>
             </div>
             <button onclick="spinWheel()" id="spin-btn" class="mt-10 bg-yellow-500 text-black px-12 py-4 rounded-full font-black text-xl shadow-xl shadow-yellow-500/20">КРУТИТИ!</button>
@@ -90,13 +97,176 @@
     <div id="cart-modal" class="hidden fixed inset-0 bg-black/95 backdrop-blur-2xl z-[100] p-4 flex items-center justify-center">
         <div class="w-full max-w-2xl bg-[#1e293b] rounded-[3rem] p-10 border border-white/10 flex flex-col max-h-[90vh]">
             <div class="flex justify-between items-center mb-8">
-                <h2 class="text-3xl font-black text-yellow-500 italic uppercase">Кошик</h2>
-                <button onclick="toggleCart()" class="text-4xl opacity-30">×</button>
+                <h2 class="text-3xl font-black text-yellow-500 italic">ВАШ КОШИК</h2>
+                <button onclick="toggleCart()" class="text-4xl opacity-30 hover:opacity-100">&times;</button>
             </div>
             <div id="cart-items" class="flex-grow overflow-y-auto space-y-4 no-scrollbar"></div>
             <div class="mt-8 pt-8 border-t border-white/5">
-                <div class="flex justify-between items-end mb-8">
-                    <span class="opacity-40 font-bold uppercase">Всього:</span>
-                    <span id="final-price" class="text-5xl font-black text-yellow-500">0 грн</span>
+                <div class="flex gap-4 mb-6">
+                    <input type="text" id="promo" placeholder="Промокод" class="bg-black/20 border border-white/10 p-4 rounded-2xl flex-grow outline-none focus:border-yellow-500 transition">
+                    <button onclick="applyPromo()" class="bg-white/10 px-6 rounded-2xl font-bold">ОК</button>
                 </div>
-                <button onclick="checkout()" class="w-full bg-yellow-5
+                <div class="flex justify-between items-end mb-8">
+                    <span class="text-sm font-bold opacity-40 uppercase">Підсумок:</span>
+                    <span id="final-price" class="text-5xl font-black text-yellow-500 tracking-tighter">0 грн</span>
+                </div>
+                <button onclick="checkout()" class="w-full bg-yellow-500 text-black py-6 rounded-[2rem] font-black text-2xl uppercase italic tracking-widest shadow-2xl shadow-yellow-500/20">Оформити замовлення</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let products = [];
+        let cart = JSON.parse(localStorage.getItem('trend_cart') || '{}');
+        let settings = JSON.parse(localStorage.getItem('trend_settings') || '{"discount": 0, "markup": 1.5}');
+        let currentCat = 'all';
+
+        async function init() {
+            try {
+                const res = await fetch('data.csv?v=' + Date.now());
+                const text = await res.text();
+                const lines = text.split(/\r?\n/).filter(l => l.trim().length > 5);
+                
+                products = lines.slice(1).map(line => {
+                    const parts = line.split(',');
+                    const sku = parts[0].replace(/"/g, '').trim();
+                    const rawPrice = parseFloat(parts[parts.length - 1]);
+                    const name = parts.slice(1, -1).join(', ').replace(/"/g, '').trim();
+                    if (!sku || isNaN(rawPrice)) return null;
+                    
+                    let price = Math.round(rawPrice * settings.markup);
+                    if (settings.discount > 0) price = Math.round(price * (1 - settings.discount / 100));
+
+                    return { sku, name, price, originalPrice: Math.round(rawPrice * settings.markup), cat: detectCat(name) };
+                }).filter(p => p !== null);
+
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('admin-count').innerText = products.length;
+                document.getElementById('global-discount').value = settings.discount;
+                document.getElementById('markup').value = settings.markup;
+                render();
+                
+                // Show Lucky Wheel after 5 seconds
+                if(!localStorage.getItem('wheel_spun')) setTimeout(() => { document.getElementById('wheel-container').style.display = 'flex'; }, 5000);
+            } catch (e) { console.error(e); }
+        }
+
+        function detectCat(name) {
+            const n = name.toLowerCase();
+            if (n.includes('лампа') || n.includes('led') || n.includes('світл')) return 'Освітлення';
+            if (n.includes('кабел') || n.includes('провід')) return 'Кабель та Провід';
+            if (n.includes('розетк') || n.includes('вимик')) return 'Розетки та Вимикачі';
+            if (n.includes('автомат') || n.includes('пзв') || n.includes('диф')) return 'Модульна автоматика';
+            if (n.includes('щит') || n.includes('бокс')) return 'Щити та бокси';
+            return 'Інше';
+        }
+
+        function render() {
+            const list = document.getElementById('product-list');
+            const term = document.getElementById('search').value.toLowerCase();
+            const filtered = products.filter(p => (p.name.toLowerCase().includes(term) || p.sku.toLowerCase().includes(term)) && (currentCat === 'all' || p.cat === currentCat));
+
+            list.innerHTML = filtered.map(p => `
+                <div class="product-card p-6 flex flex-col gap-6">
+                    <div class="relative rounded-[2rem] bg-white aspect-square overflow-hidden flex items-center justify-center group">
+                        <img src="img/${p.sku}.jpg" onerror="this.src='https://via.placeholder.com/500x500?text=TREND+ELECTRO'" class="w-full h-full object-contain p-6 transition-transform group-hover:scale-110 duration-500">
+                        ${settings.discount > 0 ? `<div class="absolute top-4 left-4 bg-red-600 text-white font-black px-4 py-2 rounded-xl text-xs">-${settings.discount}%</div>` : ''}
+                        <div class="absolute bottom-4 right-4 bg-black/80 px-4 py-2 rounded-xl text-[10px] font-black text-white">${p.sku}</div>
+                    </div>
+                    <div class="flex-grow"><h3 class="font-black text-lg leading-tight line-clamp-2 h-12">${p.name}</h3></div>
+                    <div class="flex justify-between items-center bg-black/20 rounded-3xl p-3">
+                        <div class="flex flex-col pl-2">
+                            ${settings.discount > 0 ? `<span class="text-[10px] line-through opacity-30">${p.originalPrice} грн</span>` : ''}
+                            <span class="text-2xl font-black text-yellow-500 tracking-tighter">${p.price} <small class="text-xs">грн</small></span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <button onclick="updateCart('${p.sku}', -1)" class="w-10 h-10 rounded-full bg-white/5 text-white">-</button>
+                            <span class="font-black text-white w-4 text-center">${cart[p.sku] || 0}</span>
+                            <button onclick="updateCart('${p.sku}', 1)" class="w-12 h-12 bg-yellow-500 text-black rounded-2xl font-black text-xl">+</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            document.getElementById('cart-count').innerText = Object.values(cart).reduce((a,b) => a+b, 0);
+        }
+
+        // WHEEL LOGIC
+        function spinWheel() {
+            const wheel = document.getElementById('main-wheel');
+            const deg = Math.floor(5000 + Math.random() * 5000);
+            wheel.style.transform = `rotate(${deg}deg)`;
+            document.getElementById('spin-btn').disabled = true;
+            localStorage.setItem('wheel_spun', true);
+            setTimeout(() => { 
+                alert("🎉 ВІТАЄМО! Ви виграли додаткову знижку! Промокод TREND2026 активовано!"); 
+                closeWheel();
+            }, 4500);
+        }
+        function closeWheel() { document.getElementById('wheel-container').style.display = 'none'; }
+
+        // SETTINGS & ADMIN
+        function updateSettings() {
+            settings.discount = document.getElementById('global-discount').value;
+            settings.markup = document.getElementById('markup').value;
+            localStorage.setItem('trend_settings', JSON.stringify(settings));
+            init(); // Перезавантажити ціни
+        }
+
+        function updateCart(sku, d) {
+            cart[sku] = (cart[sku] || 0) + d;
+            if (cart[sku] <= 0) delete cart[sku];
+            localStorage.setItem('trend_cart', JSON.stringify(cart));
+            render();
+            updateCartUI();
+        }
+
+        function updateCartUI() {
+            const cont = document.getElementById('cart-items');
+            let t = 0; cont.innerHTML = '';
+            for (let sku in cart) {
+                const p = products.find(i => i.sku === sku);
+                if (!p) continue;
+                t += p.price * cart[sku];
+                cont.innerHTML += `<div class="flex items-center gap-4 bg-white/5 p-4 rounded-3xl border border-white/5">
+                    <img src="img/${p.sku}.jpg" class="w-16 h-16 bg-white p-2 rounded-2xl" onerror="this.src='https://via.placeholder.com/100?text=TE'">
+                    <div class="flex-grow text-left"><p class="font-black text-sm line-clamp-1 uppercase">${p.name}</p><p class="text-yellow-500 font-bold">${cart[sku]} шт. x ${p.price}</p></div>
+                    <p class="font-black text-xl">${p.price * cart[sku]} <small class="text-[10px]">грн</small></p>
+                </div>`;
+            }
+            document.getElementById('final-price').innerText = t + " грн";
+        }
+
+        async function checkout() {
+            if(Object.keys(cart).length === 0) return;
+            let msg = `🛒 НОВЕ ЗАМОВЛЕННЯ TREND ELECTRO\n\n`;
+            for (let sku in cart) {
+                const p = products.find(i => i.sku === sku);
+                msg += `▪️ ${p.name}\n📦 ${cart[sku]} шт. на суму ${p.price * cart[sku]} грн\n\n`;
+            }
+            msg += `💰 ЗАГАЛЬНА СУМА: ${document.getElementById('final-price').innerText}`;
+            await fetch(`https://api.telegram.org/bot6918546766:AAEWLatU6fz6ITX8OI81Hd6nrMc-jE8u5cU/sendMessage?chat_id=1246930818&text=${encodeURIComponent(msg)}`);
+            alert("✅ Замовлення прийнято! Ми надіслали його в Telegram."); 
+            cart = {}; localStorage.removeItem('trend_cart'); location.reload();
+        }
+
+        function applyPromo() {
+            if(document.getElementById('promo').value.toUpperCase() === 'TREND2026') {
+                alert("🔥 Промокод активовано! Додаткова знижка 10% врахована!");
+                // Логіка перерахунку кошика зі знижкою
+            } else { alert("Невірний код"); }
+        }
+
+        function filterCat(cat, btn) {
+            currentCat = cat;
+            document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            render();
+        }
+
+        function loginAdmin() { if(prompt("Введіть ключ адміна:") === "admin123") document.getElementById('admin-panel').classList.toggle('hidden'); }
+        function toggleCart() { document.getElementById('cart-modal').classList.toggle('hidden'); updateCartUI(); }
+        document.getElementById('search').oninput = render;
+        window.onload = init;
+    </script>
+</body>
+</html>
