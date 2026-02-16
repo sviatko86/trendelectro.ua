@@ -7,140 +7,154 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root { --main-bg: #0b0f1a; --card-bg: #161b29; --accent: #eab308; }
-        body { background-color: var(--main-bg); color: white; transition: 0.3s; font-family: 'Plus Jakarta Sans', sans-serif; }
-        .product-card { 
-            background: var(--card-bg); 
-            border-radius: 2.5rem; 
-            border: 1px solid rgba(255,255,255,0.03); 
-            transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1); 
-            cursor: pointer;
-            overflow: hidden;
-        }
-        .product-card:hover { 
-            transform: translateY(-12px) scale(1.02); 
-            border-color: var(--accent); 
-            box-shadow: 0 30px 60px -15px rgba(234, 179, 8, 0.15); 
-        }
-        .category-btn { 
-            background: rgba(255,255,255,0.03); 
-            color: #94a3b8; 
-            border-radius: 99px; 
-            padding: 14px 28px; 
-            white-space: nowrap; 
-            transition: 0.4s; 
-            font-size: 13px; 
-            font-weight: 800; 
-            border: 1px solid rgba(255,255,255,0.05);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        .category-btn.active { 
-            background: var(--accent) !important; 
-            color: #000 !important; 
-            box-shadow: 0 10px 20px rgba(234, 179, 8, 0.2);
-        }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        
-        .img-container {
-            background: #fff;
-            position: relative;
-            aspect-ratio: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 2rem;
-            margin: 10px;
-            overflow: hidden;
-        }
-
-        /* Анімація появи карток */
-        @keyframes reveal {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-reveal { animation: reveal 0.6s ease forwards; }
-
-        #wheel-container { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 200; align-items: center; justify-content: center; backdrop-filter: blur(20px); }
+        :root { --main-bg: #0f172a; --card-bg: #1e293b; --accent: #eab308; }
+        body { background-color: var(--main-bg); color: white; font-family: 'Inter', sans-serif; }
+        .product-card { background: var(--card-bg); border-radius: 2rem; border: 1px solid rgba(255,255,255,0.05); transition: 0.3s; height: 100%; display: flex; flex-direction: column; }
+        .product-card:hover { transform: translateY(-5px); border-color: var(--accent); }
+        .category-btn { background: rgba(255,255,255,0.05); padding: 10px 20px; border-radius: 99px; font-size: 13px; font-weight: 700; white-space: nowrap; }
+        .category-btn.active { background: var(--accent); color: #000; }
     </style>
 </head>
-<body class="antialiased">
+<body>
 
-    <header class="p-6 sticky top-0 z-40 backdrop-blur-2xl bg-[#0b0f1a]/80 border-b border-white/5">
+    <header class="p-6 sticky top-0 z-40 backdrop-blur-xl bg-[#0f172a]/80 border-b border-white/5">
         <div class="container mx-auto flex justify-between items-center">
-            <div class="flex items-center gap-5">
-                <div class="bg-yellow-500 text-black w-12 h-12 rounded-2xl flex items-center justify-center shadow-2xl shadow-yellow-500/20 rotate-3">
-                    <i class="fas fa-bolt text-2xl"></i>
-                </div>
-                <div>
-                    <h1 class="text-3xl font-black uppercase tracking-tighter italic leading-none">Trend <span class="text-yellow-500">Electro</span></h1>
-                    <p class="text-[9px] uppercase tracking-[0.4em] opacity-30 mt-1 font-bold">Premium Supply</p>
-                </div>
-            </div>
-            <div class="flex gap-4">
-                <button onclick="loginAdmin()" class="bg-white/5 w-12 h-12 rounded-2xl border border-white/10 hover:bg-white/10 transition flex items-center justify-center">
-                    <i class="fas fa-fingerprint text-yellow-500 opacity-60"></i>
-                </button>
-                <button onclick="toggleCart()" class="relative bg-yellow-500 text-black w-12 h-12 rounded-2xl hover:scale-105 transition flex items-center justify-center shadow-lg shadow-yellow-500/20">
-                    <i class="fas fa-shopping-basket text-xl"></i>
-                    <span id="cart-count" class="absolute -top-2 -right-2 bg-red-600 text-white text-[11px] w-6 h-6 flex items-center justify-center rounded-full font-black border-4 border-[#0b0f1a]">0</span>
-                </button>
-            </div>
+            <h1 class="text-2xl font-black uppercase italic">Trend <span class="text-yellow-500">Electro</span></h1>
+            <button onclick="toggleCart()" class="relative bg-white/5 w-12 h-12 rounded-2xl flex items-center justify-center">
+                <i class="fas fa-shopping-cart"></i>
+                <span id="cart-count" class="absolute -top-2 -right-2 bg-red-600 text-white text-[10px] w-6 h-6 flex items-center justify-center rounded-full font-black">0</span>
+            </button>
         </div>
     </header>
 
-    <main class="container mx-auto px-4 pb-20">
-        <div class="mt-12 mb-12 max-w-4xl mx-auto relative group">
-            <input type="text" id="search" placeholder="Пошук обладнання за назвою або артикулом..." 
-                class="w-full p-8 pl-16 rounded-[2.5rem] bg-white/5 border border-white/10 focus:border-yellow-500 focus:ring-4 focus:ring-yellow-500/10 outline-none text-xl transition-all placeholder:opacity-20">
-            <i class="fas fa-search absolute left-7 top-1/2 -translate-y-1/2 text-yellow-500 text-2xl opacity-40 group-focus-within:opacity-100 transition-opacity"></i>
+    <main class="container mx-auto px-4 py-8">
+        <input type="text" id="search" placeholder="Пошук за назвою або артикулом..." 
+            class="w-full p-6 rounded-3xl bg-white/5 border border-white/10 mb-8 outline-none focus:border-yellow-500 text-white">
+
+        <div class="flex gap-3 overflow-x-auto pb-8 no-scrollbar" id="filters">
+            <button onclick="filterCat('all', this)" class="category-btn active">⚡️ ВСЕ</button>
+            <button onclick="filterCat('Освітлення', this)" class="category-btn">💡 СВІТЛО</button>
+            <button onclick="filterCat('Кабель', this)" class="category-btn">🔌 КАБЕЛЬ</button>
+            <button onclick="filterCat('Розетки', this)" class="category-btn">🔘 РОЗЕТКИ</button>
+            <button onclick="filterCat('Автоматика', this)" class="category-btn">🛡 АВТОМАТИКА</button>
         </div>
 
-        <div class="flex gap-4 overflow-x-auto pb-12 no-scrollbar">
-            <button onclick="filterCat('all', this)" class="category-btn active">⚡️ Всі товари</button>
-            <button onclick="filterCat('Освітлення', this)" class="category-btn">💡 Світлотехніка</button>
-            <button onclick="filterCat('Кабель', this)" class="category-btn">🔌 Кабель та провід</button>
-            <button onclick="filterCat('Розетки', this)" class="category-btn">🔘 Фурнітура</button>
-            <button onclick="filterCat('Автоматика', this)" class="category-btn">🛡 Автоматика</button>
-        </div>
-
-        <div id="admin-panel" class="hidden bg-white/5 border border-white/10 p-10 rounded-[3rem] mb-12 backdrop-blur-md">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
-                <div>
-                    <h3 class="text-yellow-500 font-black uppercase text-xs tracking-widest mb-4">Націнка (%)</h3>
-                    <input type="number" id="markup" value="1.5" step="0.1" onchange="updateSettings()" class="w-full bg-black/40 p-4 rounded-2xl outline-none border border-white/10 text-xl font-bold">
-                </div>
-                <div>
-                    <h3 class="text-yellow-500 font-black uppercase text-xs tracking-widest mb-4">Статус бази</h3>
-                    <div class="text-2xl font-black">Завантажено: <span id="admin-count">0</span></div>
-                </div>
-                <div class="flex items-end">
-                    <button onclick="localStorage.clear(); location.reload();" class="w-full bg-red-500/10 text-red-500 p-4 rounded-2xl font-black uppercase text-xs border border-red-500/20 hover:bg-red-500 hover:text-white transition">Очистити систему</button>
-                </div>
-            </div>
-        </div>
-
-        <div id="loading" class="py-40 text-center">
-            <div class="w-16 h-16 border-4 border-yellow-500/10 border-t-yellow-500 rounded-full animate-spin inline-block"></div>
-            <p class="mt-6 uppercase tracking-[0.3em] font-black text-[10px] opacity-40">Ініціалізація бази даних</p>
-        </div>
-        <div id="product-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-10"></div>
+        <div id="status-msg" class="text-center py-10 text-yellow-500 font-bold hidden"></div>
+        <div id="product-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"></div>
     </main>
 
-    <div id="product-modal" class="hidden fixed inset-0 bg-black/95 backdrop-blur-3xl z-[150] p-4 flex items-center justify-center" onclick="closeProduct()">
-        <div class="w-full max-w-5xl bg-[#161b29] rounded-[4rem] p-10 border border-white/10 overflow-y-auto max-h-[90vh] relative" onclick="event.stopPropagation()">
-            <button onclick="closeProduct()" class="absolute top-10 right-10 text-5xl font-light opacity-20 hover:opacity-100 transition">&times;</button>
-            <div id="modal-content" class="grid grid-cols-1 md:grid-cols-2 gap-16"></div>
-        </div>
-    </div>
+    <script>
+        let products = [];
+        let cart = {};
+        let currentCat = 'all';
 
-    <div id="cart-modal" class="hidden fixed inset-0 bg-black/98 z-[100] p-4 flex items-center justify-end">
-        <div class="w-full max-w-md bg-[#161b29] h-full rounded-[3.5rem] p-10 border border-white/10 flex flex-col">
-            <div class="flex justify-between items-center mb-10">
-                <h2 class="text-3xl font-black text-yellow-500 italic uppercase">Кошик</h2>
-                <button onclick="toggleCart()" class="text-3xl opacity-30">&times;</button>
-            </div>
-            <div id="cart-items" class="flex-grow overflow-y-auto space-y-6 no-scrollbar"></div>
-            <div class="mt-10 pt-10 border-t border-white/5">
-                <div class="flex justify-between items-baseline mb-10">
-                    <span class="text-xs font-black opacity-3
+        // Функція для правильного читання CSV
+        function parseCSV(text) {
+            const rows = [];
+            let row = [''];
+            let inQuotes = false;
+            for (let i = 0; i < text.length; i++) {
+                const char = text[i];
+                if (char === '"') inQuotes = !inQuotes;
+                else if (char === ',' && !inQuotes) row.push('');
+                else if (char === '\r' || char === '\n') {
+                    if (!inQuotes) {
+                        if (row.length > 1) rows.push(row);
+                        row = [''];
+                    }
+                } else row[row.length - 1] += char;
+            }
+            return rows;
+        }
+
+        async function init() {
+            const status = document.getElementById('status-msg');
+            try {
+                // ВАЖЛИВО: Переконайся, що файл називається саме data.csv
+                const res = await fetch('data.csv');
+                if (!res.ok) throw new Error("Файл data.csv не знайдено!");
+                
+                const text = await res.text();
+                const rows = parseCSV(text);
+                
+                // Пропускаємо заголовок (rows[0])
+                products = rows.slice(1).map(row => {
+                    const sku = row[0]?.trim();
+                    const name = row[1]?.trim();
+                    const img = row[3]?.trim();
+                    if (!sku || !name) return null;
+
+                    return {
+                        sku, name, 
+                        image: (img && img.includes('http')) ? img : null,
+                        price: 150, // Ставимо ціну за замовчуванням
+                        cat: detectCat(name)
+                    };
+                }).filter(p => p !== null);
+
+                if (products.length === 0) {
+                    status.innerText = "Товари в базі не знайдені (перевір структуру CSV)";
+                    status.classList.remove('hidden');
+                }
+
+                render();
+            } catch (e) {
+                status.innerText = "Помилка завантаження: " + e.message;
+                status.classList.remove('hidden');
+                console.error(e);
+            }
+        }
+
+        function detectCat(name) {
+            const n = name.toLowerCase();
+            if (n.includes('лампа') || n.includes('led')) return 'Освітлення';
+            if (n.includes('кабел') || n.includes('провід')) return 'Кабель';
+            if (n.includes('розетк') || n.includes('вимик')) return 'Розетки';
+            if (n.includes('автомат') || n.includes('щит')) return 'Автоматика';
+            return 'Інше';
+        }
+
+        function render() {
+            const list = document.getElementById('product-list');
+            const term = document.getElementById('search').value.toLowerCase();
+            
+            const filtered = products.filter(p => 
+                (p.name.toLowerCase().includes(term) || p.sku.toLowerCase().includes(term)) &&
+                (currentCat === 'all' || p.cat === currentCat)
+            );
+
+            list.innerHTML = filtered.map(p => `
+                <div class="product-card p-4">
+                    <div class="bg-white rounded-2xl h-48 mb-4 overflow-hidden flex items-center justify-center p-2">
+                        <img src="${p.image || 'https://via.placeholder.com/200?text=Trend+Electro'}" class="max-h-full object-contain">
+                    </div>
+                    <div class="flex-grow">
+                        <p class="text-[10px] text-yellow-500 font-bold mb-1 uppercase">${p.sku}</p>
+                        <h3 class="font-bold text-sm leading-tight line-clamp-2 mb-4">${p.name}</h3>
+                    </div>
+                    <div class="flex justify-between items-center mt-auto bg-black/20 p-2 rounded-xl">
+                        <span class="font-black text-yellow-500">${p.price} грн</span>
+                        <button onclick="addToCart('${p.sku}')" class="bg-yellow-500 text-black w-10 h-10 rounded-lg flex items-center justify-center font-bold">+</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function addToCart(sku) {
+            cart[sku] = (cart[sku] || 0) + 1;
+            document.getElementById('cart-count').innerText = Object.values(cart).reduce((a, b) => a + b, 0);
+            alert("Додано!");
+        }
+
+        function filterCat(cat, btn) {
+            currentCat = cat;
+            document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            render();
+        }
+
+        document.getElementById('search').oninput = render;
+        window.onload = init;
+    </script>
+</body>
+</html>
