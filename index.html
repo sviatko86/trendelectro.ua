@@ -3,129 +3,103 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trend Electro — Офіційний каталог</title>
+    <title>Trend Electro — Офіційний сайт</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        body { 
-            background: #0b0f1a; 
-            color: #ffffff; 
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            -webkit-font-smoothing: antialiased;
+        body { background: #0b0f1a; color: white; font-family: 'Plus Jakarta Sans', sans-serif; }
+        .product-card { 
+            background: #161b29; 
+            border: 1px solid rgba(255,255,255,0.05); 
+            border-radius: 28px; 
+            transition: all 0.4s ease;
         }
-        .glass-header {
-            background: rgba(11, 15, 26, 0.8);
-            backdrop-filter: blur(12px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        .product-card:hover { 
+            border-color: #eab308; 
+            transform: translateY(-10px);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
         }
-        .product-card {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 24px;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .product-card:hover {
-            background: rgba(255, 255, 255, 0.06);
-            border-color: #eab308;
-            transform: translateY(-8px);
-            box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5);
-        }
-        .img-container {
-            background: #ffffff;
-            position: relative;
+        .img-box {
+            background: #fff;
+            height: 220px;
+            border-radius: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             overflow: hidden;
-            border-radius: 18px;
+            position: relative;
         }
-        .img-container img {
-            transition: transform 0.6s ease;
-        }
-        .product-card:hover .img-container img {
-            transform: scale(1.08);
+        .placeholder-box {
+            background: linear-gradient(45deg, #1e293b, #0f172a);
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #eab308;
         }
         .cat-btn {
-            padding: 10px 24px;
+            padding: 12px 24px;
             border-radius: 99px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
             font-size: 13px;
-            font-weight: 600;
-            white-space: nowrap;
+            font-weight: 700;
             transition: 0.3s;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: #94a3b8;
+            color: #64748b;
         }
         .cat-btn.active {
             background: #eab308;
-            color: #000000;
-            border-color: #eab308;
-            box-shadow: 0 0 20px rgba(234, 179, 8, 0.3);
+            color: #000;
+            box-shadow: 0 10px 20px rgba(234, 179, 8, 0.2);
         }
-        .line-clamp-2 {
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
-        .modal-blur {
-            backdrop-filter: blur(10px);
-            background: rgba(0, 0, 0, 0.85);
-        }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .animate-card { animation: fadeIn 0.5s ease forwards; }
+        .line-clamp { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .modal-overlay { backdrop-filter: blur(15px); background: rgba(0,0,0,0.8); }
     </style>
 </head>
 <body>
 
-    <header class="p-5 sticky top-0 z-50 glass-header">
+    <header class="p-6 sticky top-0 z-50 bg-[#0b0f1a]/80 backdrop-blur-lg border-b border-white/5">
         <div class="container mx-auto flex justify-between items-center">
-            <div class="flex items-center gap-3">
-                <div class="bg-yellow-500 text-black w-11 h-11 rounded-2xl flex items-center justify-center shadow-lg shadow-yellow-500/20 rotate-3">
-                    <i class="fas fa-bolt text-xl"></i>
+            <div class="flex items-center gap-4">
+                <div class="bg-yellow-500 text-black w-12 h-12 rounded-2xl flex items-center justify-center shadow-xl shadow-yellow-500/20 rotate-3">
+                    <i class="fas fa-bolt text-2xl"></i>
                 </div>
-                <div>
-                    <h1 class="text-2xl font-black italic uppercase leading-none">Trend <span class="text-yellow-500">Electro</span></h1>
-                    <p class="text-[9px] opacity-40 tracking-[0.3em] uppercase mt-1">Professional Supply</p>
-                </div>
+                <h1 class="text-3xl font-black italic uppercase tracking-tighter">Trend <span class="text-yellow-500">Electro</span></h1>
             </div>
-            <div class="flex gap-4">
-                <button onclick="loginAdmin()" class="w-11 h-11 rounded-full bg-white/5 flex items-center justify-center border border-white/10 hover:bg-white/10 transition">
-                    <i class="fas fa-cog text-sm opacity-50"></i>
-                </button>
-                <button class="relative w-11 h-11 rounded-full bg-yellow-500 text-black flex items-center justify-center shadow-lg shadow-yellow-500/20">
-                    <i class="fas fa-shopping-cart text-sm"></i>
-                    <span id="cart-count" class="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full font-bold border-2 border-[#0b0f1a]">0</span>
-                </button>
-            </div>
+            <button onclick="loginAdmin()" class="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center border border-white/10 hover:bg-white/10 transition">
+                <i class="fas fa-shield-alt text-yellow-500 opacity-50"></i>
+            </button>
         </div>
     </header>
 
-    <main class="container mx-auto px-4 py-8">
-        <div class="mb-10 relative group">
-            <input type="text" id="search" oninput="render()" placeholder="Пошук обладнання за назвою або SKU..." 
-                class="w-full bg-white/5 border border-white/10 p-6 pl-16 rounded-[2rem] outline-none focus:border-yellow-500 focus:ring-4 focus:ring-yellow-500/10 transition-all text-lg">
-            <i class="fas fa-search absolute left-6 top-1/2 -translate-y-1/2 text-yellow-500 opacity-40 group-focus-within:opacity-100 transition-opacity"></i>
+    <main class="container mx-auto px-4 py-10">
+        <div class="max-w-3xl mx-auto mb-12 relative">
+            <input type="text" id="search" oninput="render()" placeholder="Пошук за назвою або артикулом..." 
+                class="w-full bg-white/5 border border-white/10 p-6 pl-16 rounded-3xl outline-none focus:border-yellow-500 focus:ring-4 focus:ring-yellow-500/10 transition-all text-lg">
+            <i class="fas fa-search absolute left-6 top-1/2 -translate-y-1/2 text-yellow-500 text-xl"></i>
         </div>
 
-        <div class="flex gap-3 overflow-x-auto pb-8 no-scrollbar">
-            <button onclick="filterCat('all', this)" class="cat-btn active">Всі товари</button>
-            <button onclick="filterCat('Освітлення', this)" class="cat-btn">Світлотехніка</button>
-            <button onclick="filterCat('Кабель', this)" class="cat-btn">Кабель / Провід</button>
-            <button onclick="filterCat('Розетки', this)" class="cat-btn">Електрофурнітура</button>
-            <button onclick="filterCat('Бокси', this)" class="cat-btn">Низьковольтне обладнання</button>
+        <div class="flex gap-3 overflow-x-auto pb-8 no-scrollbar mb-8">
+            <button onclick="filterCat('all', this)" class="cat-btn active">ВСІ ТОВАРИ</button>
+            <button onclick="filterCat('Освітлення', this)" class="cat-btn">ОСВІТЛЕННЯ</button>
+            <button onclick="filterCat('Кабель', this)" class="cat-btn">КАБЕЛЬ ТА МОНТАЖ</button>
+            <button onclick="filterCat('Розетки', this)" class="cat-btn">ФУРНІТУРА</button>
+            <button onclick="filterCat('Бокси', this)" class="cat-btn">АВТОМАТИКА</button>
         </div>
 
         <div id="loader" class="py-40 text-center">
-            <div class="inline-block w-10 h-10 border-4 border-yellow-500/20 border-t-yellow-500 rounded-full animate-spin"></div>
-            <p class="mt-4 text-[11px] font-bold opacity-30 uppercase tracking-widest">Обробка бази даних...</p>
+            <div class="w-12 h-12 border-4 border-yellow-500/20 border-t-yellow-500 rounded-full animate-spin inline-block"></div>
         </div>
         <div id="product-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 hidden"></div>
     </main>
 
-    <div id="modal" class="hidden fixed inset-0 z-[100] modal-blur p-4 flex items-center justify-center" onclick="closeModal()">
-        <div class="bg-[#161b29] w-full max-w-4xl rounded-[3rem] p-8 md:p-12 overflow-hidden relative border border-white/10" onclick="event.stopPropagation()">
-            <button onclick="closeModal()" class="absolute top-8 right-8 text-3xl opacity-20 hover:opacity-100 transition">&times;</button>
-            <div id="modal-content" class="grid grid-cols-1 md:grid-cols-2 gap-12 overflow-y-auto max-h-[80vh] pr-2 no-scrollbar"></div>
+    <div id="modal" class="hidden fixed inset-0 z-[100] modal-overlay p-4 flex items-center justify-center" onclick="closeModal()">
+        <div class="bg-[#1c2231] w-full max-w-4xl rounded-[40px] p-8 md:p-12 relative overflow-y-auto max-h-[90vh]" onclick="event.stopPropagation()">
+            <button onclick="closeModal()" class="absolute top-8 right-8 text-4xl opacity-30 hover:opacity-100">&times;</button>
+            <div id="modal-content" class="grid grid-cols-1 md:grid-cols-2 gap-10"></div>
         </div>
     </div>
 
@@ -136,28 +110,21 @@
         async function init() {
             try {
                 const response = await fetch('data.csv?v=' + Date.now());
-                const csvData = await response.text();
-                
-                // Професійний Regex парсинг CSV
-                const rows = parseCSV(csvData);
+                const csvText = await response.text();
+                const rows = parseCSV(csvText);
 
                 products = rows.slice(1).map(row => {
                     if (row.length < 2) return null;
                     const sku = row[0]?.trim() || '';
                     const name = row[1]?.trim() || '';
-                    const desc = row[2]?.trim() || 'Детальні характеристики уточнюйте у менеджера.';
+                    const desc = row[2]?.trim() || 'Інформація оновлюється...';
                     let img = row[3]?.trim() || '';
                     const brand = row[4]?.trim() || 'Trend';
 
-                    // Валідація посилання на фото
-                    const isValidImg = img.length > 30; // Перевірка, чи це не просто домен
+                    // ПЕРЕВІРКА КАРТИНКИ: якщо посилання занадто коротке (просто папка) - ставимо null
+                    const hasValidImg = img.length > 30 && img.includes('.');
 
-                    return { 
-                        sku, name, desc, brand,
-                        img: isValidImg ? img : `https://via.placeholder.com/500x500?text=${brand}`,
-                        price: 150,
-                        cat: detectCat(name)
-                    };
+                    return { sku, name, desc, brand, img: hasValidImg ? img : null, cat: detectCat(name) };
                 }).filter(p => p !== null && p.sku !== "");
 
                 document.getElementById('loader').classList.add('hidden');
@@ -165,23 +132,20 @@
                 render();
             } catch (e) {
                 console.error(e);
-                document.getElementById('loader').innerHTML = "Помилка доступу до бази даних.";
+                document.getElementById('loader').innerHTML = "Помилка бази даних.";
             }
         }
 
         function parseCSV(str) {
-            const arr = [];
-            let quote = false;
+            const arr = []; let quote = false;
             for (let row = col = c = 0; c < str.length; c++) {
                 let cc = str[c], nc = str[c+1];
-                arr[row] = arr[row] || [];
-                arr[row][col] = arr[row][col] || '';
+                arr[row] = arr[row] || []; arr[row][col] = arr[row][col] || '';
                 if (cc == '"' && quote && nc == '"') { arr[row][col] += cc; ++c; continue; }
                 if (cc == '"') { quote = !quote; continue; }
                 if (cc == ',' && !quote) { ++col; continue; }
-                if (cc == '\r' && nc == '\n' && !quote) { ++row; col = 0; ++c; continue; }
+                if (cc == '\r' && !quote) { ++row; col = 0; if(nc=='\n') ++c; continue; }
                 if (cc == '\n' && !quote) { ++row; col = 0; continue; }
-                if (cc == '\r' && !quote) { ++row; col = 0; continue; }
                 arr[row][col] += cc;
             }
             return arr;
@@ -189,43 +153,37 @@
 
         function detectCat(name) {
             const n = name.toLowerCase();
-            if (n.includes('led') || n.includes('світл') || n.includes('ламп') || n.includes('панель')) return 'Освітлення';
-            if (n.includes('кабель') || n.includes('провід') || n.includes('ввг') || n.includes('пвс')) return 'Кабель';
-            if (n.includes('розетк') || n.includes('вимикач') || n.includes('гніздо')) return 'Розетки';
-            if (n.includes('бокс') || n.includes('автомат') || n.includes('щит')) return 'Бокси';
+            if (n.includes('led') || n.includes('ламп') || n.includes('світл')) return 'Освітлення';
+            if (n.includes('кабел') || n.includes('провід') || n.includes('скоб')) return 'Кабель';
+            if (n.includes('розетк') || n.includes('вимик')) return 'Розетки';
+            if (n.includes('бокс') || n.includes('авт') || n.includes('щит')) return 'Бокси';
             return 'Інше';
         }
 
         function render() {
             const list = document.getElementById('product-list');
             const term = document.getElementById('search').value.toLowerCase();
-            
-            const filtered = products.filter(p => {
-                const matchSearch = p.name.toLowerCase().includes(term) || p.sku.toLowerCase().includes(term);
-                const matchCat = currentCat === 'all' || p.cat === currentCat;
-                return matchSearch && matchCat;
-            });
+            const filtered = products.filter(p => (p.name.toLowerCase().includes(term) || p.sku.toLowerCase().includes(term)) && (currentCat === 'all' || p.cat === currentCat));
 
-            list.innerHTML = filtered.map((p, index) => `
-                <div class="product-card p-5 flex flex-col animate-card" style="animation-delay: ${index * 0.05}s" onclick="openModal('${p.sku}')">
-                    <div class="img-container h-52 mb-6 flex items-center justify-center p-4">
-                        <img src="${p.img}" onerror="this.src='https://via.placeholder.com/400?text=${p.brand}'" class="max-h-full max-w-full object-contain">
+            list.innerHTML = filtered.map(p => `
+                <div class="product-card p-6 flex flex-col cursor-pointer" onclick="openModal('${p.sku}')">
+                    <div class="img-box mb-6">
+                        ${p.img ? `<img src="${p.img}" class="max-h-full object-contain">` : 
+                        `<div class="placeholder-box">
+                            <i class="fas fa-bolt text-4xl mb-2"></i>
+                            <span class="text-[10px] font-black uppercase tracking-widest">${p.brand}</span>
+                        </div>`}
                     </div>
-                    <div class="flex-grow text-left">
-                        <div class="flex justify-between items-center mb-3">
-                            <span class="text-[10px] bg-yellow-500/10 text-yellow-500 px-3 py-1 rounded-full font-extrabold uppercase tracking-widest">${p.brand}</span>
+                    <div class="flex-grow">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-[10px] text-yellow-500 font-black uppercase tracking-widest">${p.brand}</span>
                             <span class="text-[10px] opacity-30 font-bold">${p.sku}</span>
                         </div>
-                        <h3 class="font-bold text-base leading-tight text-white line-clamp-2 mb-4 h-10">${p.name}</h3>
+                        <h3 class="font-bold text-base leading-tight line-clamp h-10">${p.name}</h3>
                     </div>
-                    <div class="flex justify-between items-center pt-5 border-t border-white/5">
-                        <div>
-                            <p class="text-[10px] opacity-30 uppercase font-bold tracking-tighter mb-1">Орієнтовна ціна</p>
-                            <span class="text-2xl font-black text-white tracking-tighter">${p.price} <small class="text-xs text-yellow-500">грн</small></span>
-                        </div>
-                        <button class="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center hover:bg-yellow-500 hover:text-black transition-all">
-                            <i class="fas fa-arrow-right"></i>
-                        </button>
+                    <div class="mt-6 pt-5 border-t border-white/5 flex justify-between items-center text-yellow-500">
+                        <span class="text-xs font-black uppercase tracking-widest">Детальніше</span>
+                        <i class="fas fa-chevron-right"></i>
                     </div>
                 </div>
             `).join('');
@@ -234,44 +192,32 @@
         function openModal(sku) {
             const p = products.find(i => i.sku === sku);
             const content = document.getElementById('modal-content');
-            
             content.innerHTML = `
-                <div class="bg-white rounded-[2.5rem] p-8 flex items-center justify-center min-h-[400px]">
-                    <img src="${p.img}" class="max-h-full object-contain" onerror="this.src='https://via.placeholder.com/600?text=${p.brand}'">
+                <div class="bg-white rounded-3xl p-6 flex items-center justify-center min-h-[350px]">
+                    ${p.img ? `<img src="${p.img}" class="max-h-full object-contain">` : `<div class="placeholder-box text-3xl font-black italic">TREND</div>`}
                 </div>
                 <div class="text-left flex flex-col justify-center">
-                    <span class="text-yellow-500 font-extrabold tracking-[0.3em] text-[11px] mb-4 uppercase">Product Details</span>
-                    <h2 class="text-4xl font-black mb-6 leading-tight">${p.name}</h2>
-                    <div class="flex gap-6 mb-8">
-                        <div><p class="text-[10px] opacity-40 uppercase font-bold">Артикул</p><p class="font-bold">${p.sku}</p></div>
-                        <div><p class="text-[10px] opacity-40 uppercase font-bold">Виробник</p><p class="font-bold">${p.brand}</p></div>
+                    <span class="text-yellow-500 font-black tracking-[0.3em] text-[10px] mb-4 uppercase">${p.brand} | Артикул ${p.sku}</span>
+                    <h2 class="text-3xl font-extrabold mb-6 leading-tight">${p.name}</h2>
+                    <div class="bg-white/5 p-6 rounded-3xl border border-white/10 mb-8">
+                        <h4 class="text-[10px] opacity-40 uppercase font-black mb-3">Опис продукту</h4>
+                        <div class="text-sm opacity-70 leading-relaxed overflow-y-auto max-h-40 no-scrollbar">${p.desc}</div>
                     </div>
-                    <div class="prose prose-invert mb-10 opacity-70 text-sm leading-relaxed max-h-48 overflow-y-auto pr-4 no-scrollbar">
-                        ${p.desc}
-                    </div>
-                    <button class="bg-yellow-500 text-black py-5 rounded-2xl font-black uppercase tracking-widest hover:scale-105 transition-transform">Додати в кошик • ${p.price} грн</button>
+                    <button class="bg-yellow-500 text-black py-5 rounded-2xl font-black uppercase tracking-widest shadow-xl shadow-yellow-500/20 active:scale-95 transition">Замовити консультацію</button>
                 </div>
             `;
             document.getElementById('modal').classList.remove('hidden');
             document.body.style.overflow = 'hidden';
         }
 
-        function closeModal() {
-            document.getElementById('modal').classList.add('hidden');
-            document.body.style.overflow = 'auto';
-        }
-
+        function closeModal() { document.getElementById('modal').classList.add('hidden'); document.body.style.overflow = 'auto'; }
         function filterCat(cat, btn) {
             currentCat = cat;
             document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             render();
         }
-
-        function loginAdmin() {
-            if(prompt("Введіть ключ:") === "admin123") alert("Система активована. Товарів: " + products.length);
-        }
-
+        function loginAdmin() { if(prompt("Pass:") === "admin123") alert("Total: " + products.length); }
         window.onload = init;
     </script>
 </body>
