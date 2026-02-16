@@ -15,7 +15,6 @@
         .category-btn.active { background: var(--accent) !important; color: #000 !important; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         
-        /* Wheel of Fortune */
         #wheel-container { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 200; align-items: center; justify-content: center; backdrop-filter: blur(10px); }
         .wheel { width: 300px; height: 300px; border-radius: 50%; border: 10px solid var(--accent); position: relative; transition: 4s cubic-bezier(0.1, 0, 0, 1); overflow: hidden; }
         .wheel-part { position: absolute; width: 50%; height: 50%; transform-origin: 100% 100%; display: flex; align-items: center; justify-content: center; font-weight: 900; color: #000; }
@@ -79,6 +78,30 @@
         <div id="product-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"></div>
     </main>
 
+    <div id="cart-modal" class="hidden fixed inset-0 bg-black/95 backdrop-blur-2xl z-[100] p-4 flex items-center justify-center">
+        <div class="w-full max-w-2xl bg-[#1e293b] rounded-[3rem] p-8 border border-white/10 flex flex-col max-h-[95vh]">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-3xl font-black text-yellow-500 italic">ВАШ КОШИК</h2>
+                <button onclick="toggleCart()" class="text-4xl opacity-30 hover:opacity-100">&times;</button>
+            </div>
+            
+            <div id="cart-items" class="flex-grow overflow-y-auto space-y-4 no-scrollbar mb-6"></div>
+            
+            <div class="space-y-3 mb-6">
+                <input type="text" id="client-name" placeholder="Ваше ім'я" class="w-full bg-black/20 border border-white/10 p-4 rounded-2xl outline-none focus:border-yellow-500 transition">
+                <input type="tel" id="client-phone" placeholder="Номер телефону (0XX XXX XX XX)" class="w-full bg-black/20 border border-white/10 p-4 rounded-2xl outline-none focus:border-yellow-500 transition">
+            </div>
+
+            <div class="pt-6 border-t border-white/5">
+                <div class="flex justify-between items-end mb-6">
+                    <span class="text-sm font-bold opacity-40 uppercase">Підсумок:</span>
+                    <span id="final-price" class="text-4xl font-black text-yellow-500 tracking-tighter">0 грн</span>
+                </div>
+                <button onclick="checkout()" class="w-full bg-yellow-500 text-black py-5 rounded-[2rem] font-black text-xl uppercase italic tracking-widest shadow-2xl shadow-yellow-500/20">Оформити замовлення</button>
+            </div>
+        </div>
+    </div>
+
     <div id="wheel-container">
         <div class="text-center bg-gray-900 p-10 rounded-[3rem] border border-yellow-500/30 relative">
             <button onclick="closeWheel()" class="absolute top-6 right-6 text-2xl opacity-30">&times;</button>
@@ -91,27 +114,6 @@
                 <div class="wheel-part bg-white" style="transform: rotate(270deg) skewY(-45deg)"><span>7%</span></div>
             </div>
             <button onclick="spinWheel()" id="spin-btn" class="mt-10 bg-yellow-500 text-black px-12 py-4 rounded-full font-black text-xl shadow-xl shadow-yellow-500/20">КРУТИТИ!</button>
-        </div>
-    </div>
-
-    <div id="cart-modal" class="hidden fixed inset-0 bg-black/95 backdrop-blur-2xl z-[100] p-4 flex items-center justify-center">
-        <div class="w-full max-w-2xl bg-[#1e293b] rounded-[3rem] p-10 border border-white/10 flex flex-col max-h-[90vh]">
-            <div class="flex justify-between items-center mb-8">
-                <h2 class="text-3xl font-black text-yellow-500 italic">ВАШ КОШИК</h2>
-                <button onclick="toggleCart()" class="text-4xl opacity-30 hover:opacity-100">&times;</button>
-            </div>
-            <div id="cart-items" class="flex-grow overflow-y-auto space-y-4 no-scrollbar"></div>
-            <div class="mt-8 pt-8 border-t border-white/5">
-                <div class="flex gap-4 mb-6">
-                    <input type="text" id="promo" placeholder="Промокод" class="bg-black/20 border border-white/10 p-4 rounded-2xl flex-grow outline-none focus:border-yellow-500 transition">
-                    <button onclick="applyPromo()" class="bg-white/10 px-6 rounded-2xl font-bold">ОК</button>
-                </div>
-                <div class="flex justify-between items-end mb-8">
-                    <span class="text-sm font-bold opacity-40 uppercase">Підсумок:</span>
-                    <span id="final-price" class="text-5xl font-black text-yellow-500 tracking-tighter">0 грн</span>
-                </div>
-                <button onclick="checkout()" class="w-full bg-yellow-500 text-black py-6 rounded-[2rem] font-black text-2xl uppercase italic tracking-widest shadow-2xl shadow-yellow-500/20">Оформити замовлення</button>
-            </div>
         </div>
     </div>
 
@@ -146,7 +148,6 @@
                 document.getElementById('markup').value = settings.markup;
                 render();
                 
-                // Show Lucky Wheel after 5 seconds
                 if(!localStorage.getItem('wheel_spun')) setTimeout(() => { document.getElementById('wheel-container').style.display = 'flex'; }, 5000);
             } catch (e) { console.error(e); }
         }
@@ -190,7 +191,6 @@
             document.getElementById('cart-count').innerText = Object.values(cart).reduce((a,b) => a+b, 0);
         }
 
-        // WHEEL LOGIC
         function spinWheel() {
             const wheel = document.getElementById('main-wheel');
             const deg = Math.floor(5000 + Math.random() * 5000);
@@ -204,12 +204,11 @@
         }
         function closeWheel() { document.getElementById('wheel-container').style.display = 'none'; }
 
-        // SETTINGS & ADMIN
         function updateSettings() {
             settings.discount = document.getElementById('global-discount').value;
             settings.markup = document.getElementById('markup').value;
             localStorage.setItem('trend_settings', JSON.stringify(settings));
-            init(); // Перезавантажити ціни
+            init();
         }
 
         function updateCart(sku, d) {
@@ -237,23 +236,35 @@
         }
 
         async function checkout() {
-            if(Object.keys(cart).length === 0) return;
-            let msg = `🛒 НОВЕ ЗАМОВЛЕННЯ TREND ELECTRO\n\n`;
+            const name = document.getElementById('client-name').value.trim();
+            const phone = document.getElementById('client-phone').value.trim();
+
+            if(Object.keys(cart).length === 0) { alert("Кошик порожній!"); return; }
+            if(!name || !phone) { alert("Будь ласка, введіть ім'я та номер телефону!"); return; }
+
+            let msg = `🛒 НОВЕ ЗАМОВЛЕННЯ\n\n`;
+            msg += `👤 КЛІЄНТ: ${name}\n`;
+            msg += `📞 ТЕЛЕФОН: ${phone}\n`;
+            msg += `--------------------------\n`;
+            
             for (let sku in cart) {
                 const p = products.find(i => i.sku === sku);
-                msg += `▪️ ${p.name}\n📦 ${cart[sku]} шт. на суму ${p.price * cart[sku]} грн\n\n`;
+                msg += `▪️ ${p.name}\n📦 ${cart[sku]} шт. — ${p.price * cart[sku]} грн\n\n`;
             }
+            msg += `--------------------------\n`;
             msg += `💰 ЗАГАЛЬНА СУМА: ${document.getElementById('final-price').innerText}`;
-            await fetch(`https://api.telegram.org/bot6918546766:AAEWLatU6fz6ITX8OI81Hd6nrMc-jE8u5cU/sendMessage?chat_id=1246930818&text=${encodeURIComponent(msg)}`);
-            alert("✅ Замовлення прийнято! Ми надіслали його в Telegram."); 
-            cart = {}; localStorage.removeItem('trend_cart'); location.reload();
-        }
 
-        function applyPromo() {
-            if(document.getElementById('promo').value.toUpperCase() === 'TREND2026') {
-                alert("🔥 Промокод активовано! Додаткова знижка 10% врахована!");
-                // Логіка перерахунку кошика зі знижкою
-            } else { alert("Невірний код"); }
+            try {
+                const botToken = '6918546766:AAEWLatU6fz6ITX8OI81Hd6nrMc-jE8u5cU';
+                const chatId = '1246930818';
+                await fetch(`https://api.telegram.org/bot${botToken}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(msg)}`);
+                alert("✅ Дякуємо, " + name + "! Замовлення прийнято, ми зв'яжемося з вами."); 
+                cart = {}; 
+                localStorage.removeItem('trend_cart'); 
+                location.reload();
+            } catch (e) {
+                alert("Помилка відправки. Спробуйте ще раз.");
+            }
         }
 
         function filterCat(cat, btn) {
