@@ -3,30 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trend Electro — Офіційний каталог</title>
+    <title>Trend Electro — Каталог</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root { --main-bg: #1a1c2c; --card-bg: #24273d; --text: #ffffff; }
         body.light-mode { --main-bg: #f3f4f6; --card-bg: #ffffff; --text: #1f2937; }
-        
-        body { background-color: var(--main-bg); color: var(--text); transition: all 0.3s ease; min-height: 100vh; }
-        .product-card { background: var(--card-bg); border-radius: 1.5rem; transition: all 0.3s ease; border: 1px solid rgba(255,255,255,0.05); overflow: hidden; }
-        .light-mode .product-card { border: 1px solid rgba(0,0,0,0.05); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
-        
-        .category-btn { background: rgba(255,255,255,0.08); color: white; border-radius: 99px; padding: 10px 22px; white-space: nowrap; transition: 0.3s; font-size: 14px; font-weight: 600; border: 1px solid rgba(255,255,255,0.1); }
-        .light-mode .category-btn { background: #e5e7eb; color: #374151; border: none; }
-        .category-btn.active { background: #eab308 !important; color: #000 !important; border-color: #eab308; box-shadow: 0 4px 12px rgba(234, 179, 8, 0.3); }
-
-        .loader { border: 4px solid rgba(234, 179, 8, 0.1); border-left-color: #eab308; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
+        body { background-color: var(--main-bg); color: var(--text); transition: 0.3s; min-height: 100vh; }
+        .product-card { background: var(--card-bg); border-radius: 1.5rem; border: 1px solid rgba(255,255,255,0.05); transition: 0.3s; }
+        .category-btn { background: rgba(255,255,255,0.08); color: white; border-radius: 99px; padding: 10px 20px; white-space: nowrap; transition: 0.2s; font-size: 13px; font-weight: 600; }
+        .category-btn.active { background: #eab308 !important; color: #000 !important; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        .product-img { transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
-        .product-card:hover .product-img { transform: scale(1.1); }
-        
-        /* Анімація для кошика */
-        .animate-fade-in { animation: fadeIn 0.2s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        .loader { border: 4px solid rgba(234, 179, 8, 0.1); border-left-color: #eab308; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body class="font-sans antialiased">
@@ -34,73 +23,59 @@
     <header class="p-6 sticky top-0 z-40 backdrop-blur-md bg-opacity-80">
         <div class="container mx-auto flex justify-between items-center">
             <div class="flex items-center gap-3">
-                <div class="bg-yellow-500 text-black p-2.5 rounded-xl shadow-lg shadow-yellow-500/40">
-                    <i class="fas fa-bolt text-xl"></i>
-                </div>
-                <h1 class="text-2xl font-black uppercase tracking-tighter italic text-white">
-                    Trend <span class="text-yellow-500">Electro</span>
-                </h1>
+                <div class="bg-yellow-500 text-black p-2 rounded-xl shadow-lg"><i class="fas fa-bolt"></i></div>
+                <h1 class="text-2xl font-black uppercase tracking-tighter italic text-white">Trend <span class="text-yellow-500">Electro</span></h1>
             </div>
-            <div class="flex gap-4 items-center">
-                <button onclick="loginAdmin()" class="opacity-20 hover:opacity-100 transition p-2"><i class="fas fa-cog text-xl text-white"></i></button>
-                <button onclick="toggleCart()" class="relative bg-white/5 p-3 rounded-full hover:bg-white/10 transition">
-                    <i class="fas fa-shopping-bag text-xl text-white"></i>
-                    <span id="cart-count" class="absolute -top-1 -right-1 bg-red-600 text-white text-[11px] w-6 h-6 flex items-center justify-center rounded-full font-black border-2 border-gray-900">0</span>
+            <div class="flex gap-3">
+                <button onclick="loginAdmin()" class="opacity-20 hover:opacity-100 p-2"><i class="fas fa-cog text-white"></i></button>
+                <button onclick="toggleCart()" class="relative bg-white/5 p-3 rounded-full">
+                    <i class="fas fa-shopping-bag text-white"></i>
+                    <span id="cart-count" class="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full font-bold">0</span>
                 </button>
             </div>
         </div>
     </header>
 
-    <main class="container mx-auto px-4 pb-12">
-        <div class="mb-8 relative group">
-            <input type="text" id="search" placeholder="Пошук за назвою або артикулом..." 
-                class="w-full p-5 pl-14 rounded-2xl bg-white/5 border border-white/10 focus:ring-4 focus:ring-yellow-500/50 outline-none text-lg transition-all text-white placeholder:opacity-30">
-            <i class="fas fa-search absolute left-5 top-6 opacity-30 group-focus-within:opacity-100 transition-opacity text-white"></i>
+    <main class="container mx-auto px-4 pb-10">
+        <div class="mb-6 relative">
+            <input type="text" id="search" placeholder="Пошук..." class="w-full p-4 pl-12 rounded-2xl bg-white/5 border border-white/10 outline-none text-white focus:ring-2 focus:ring-yellow-500">
+            <i class="fas fa-search absolute left-4 top-5 opacity-30 text-white"></i>
         </div>
 
-        <div class="flex gap-3 overflow-x-auto pb-8 no-scrollbar">
-            <button onclick="filterCat('all', this)" class="category-btn active">⚡️ Всі товари</button>
-            <button onclick="filterCat('Освітлення', this)" class="category-btn">💡 Освітлення</button>
+        <div class="flex gap-2 overflow-x-auto pb-6 no-scrollbar" id="cat-filters">
+            <button onclick="filterCat('all', this)" class="category-btn active">⚡️ Всі</button>
+            <button onclick="filterCat('Освітлення', this)" class="category-btn">💡 Світло</button>
             <button onclick="filterCat('Кабель', this)" class="category-btn">🔌 Кабель</button>
             <button onclick="filterCat('Розетки', this)" class="category-btn">🔘 Розетки</button>
-            <button onclick="filterCat('Автоматика', this)" class="category-btn">🛡 Автоматика</button>
-            <button onclick="filterCat('Щити', this)" class="category-btn">📦 Щити</button>
-            <button onclick="filterCat('Інструмент', this)" class="category-btn">🛠 Інструмент</button>
+            <button onclick="filterCat('Автоматика', this)" class="category-btn">🛡 Авто</button>
+            <button onclick="filterCat('Інше', this)" class="category-btn">📦 Інше</button>
         </div>
 
-        <div id="admin-panel" class="hidden bg-yellow-500/10 border-2 border-dashed border-yellow-500 p-6 rounded-[2rem] mb-10 flex flex-col md:flex-row justify-between items-center gap-4">
-            <div class="text-center md:text-left">
-                <span class="font-black text-yellow-500 block text-lg uppercase tracking-widest">Адмін-режим</span>
-                <span class="text-xs opacity-60">Товарів: <span id="admin-count" class="font-bold">0</span> | Націнка: +50%</span>
-            </div>
-            <button onclick="toggleTheme()" class="bg-yellow-500 text-black px-8 py-3 rounded-2xl font-black hover:bg-yellow-400 transition transform active:scale-95 shadow-xl shadow-yellow-500/20">ЗМІНИТИ ТЕМУ</button>
+        <div id="admin-panel" class="hidden bg-yellow-500/10 border-2 border-dashed border-yellow-500 p-4 rounded-2xl mb-6 flex justify-between items-center">
+            <span class="text-yellow-500 font-bold text-xs uppercase">Адмін: <span id="admin-count">0</span> тов.</span>
+            <button onclick="toggleTheme()" class="bg-yellow-500 text-black px-4 py-1 rounded-lg font-bold text-xs">ТЕМНИЙ/СВІТЛИЙ</button>
         </div>
 
-        <div id="loading" class="py-40 flex flex-col items-center gap-6">
+        <div id="loading" class="py-20 flex flex-col items-center gap-4">
             <div class="loader"></div>
-            <p class="text-xs font-black opacity-30 uppercase tracking-[0.4em] animate-pulse">Синхронізація Trend Electro</p>
+            <p class="text-xs opacity-40 uppercase tracking-widest">Завантаження...</p>
         </div>
 
-        <div id="product-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"></div>
+        <div id="product-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
     </main>
 
     <div id="cart-modal" class="hidden fixed inset-0 bg-black/95 backdrop-blur-xl z-[100] p-4 flex items-center justify-center">
-        <div class="w-full max-w-xl bg-gray-900 rounded-[3rem] p-10 shadow-2xl border border-white/10 max-h-[90vh] flex flex-col relative text-white">
-            <button onclick="toggleCart()" class="absolute top-6 right-8 text-5xl opacity-30 hover:opacity-100 hover:text-red-500 transition">&times;</button>
-            
-            <div class="mb-10">
-                <h2 class="text-4xl font-black text-yellow-500 uppercase italic tracking-tighter">Кошик</h2>
-                <p class="text-xs opacity-40 uppercase tracking-widest mt-1 italic">Trend Electro System</p>
+        <div class="w-full max-w-lg bg-gray-900 rounded-[2.5rem] p-8 shadow-2xl border border-white/10 flex flex-col max-h-[90vh]">
+            <div class="flex justify-between items-center mb-6 text-white">
+                <h2 class="text-2xl font-black text-yellow-500 uppercase italic">Кошик</h2>
+                <button onclick="toggleCart()" class="text-4xl opacity-30">&times;</button>
             </div>
-
-            <div id="cart-items" class="flex-grow overflow-y-auto space-y-5 pr-2 no-scrollbar"></div>
-            
-            <div class="mt-10 pt-8 border-t border-white/10">
-                <div class="flex justify-between items-end text-3xl font-black italic mb-10">
-                    <span class="opacity-50 text-xl not-italic font-medium uppercase">Разом:</span>
-                    <span id="final-price" class="text-yellow-500 text-5xl tracking-tighter">0 <small class="text-xl">грн</small></span>
+            <div id="cart-items" class="flex-grow overflow-y-auto space-y-4 no-scrollbar"></div>
+            <div class="mt-8 pt-6 border-t border-white/10 text-white">
+                <div class="flex justify-between text-2xl font-black italic mb-6">
+                    <span>РАЗОМ:</span><span id="final-price" class="text-yellow-500">0 грн</span>
                 </div>
-                <button onclick="checkout()" class="w-full bg-yellow-500 text-black py-6 rounded-[2rem] font-black text-2xl shadow-2xl shadow-yellow-500/30 active:scale-95 transition-all hover:bg-yellow-400 uppercase italic">Надіслати замовлення</button>
+                <button onclick="checkout()" class="w-full bg-yellow-500 text-black py-5 rounded-2xl font-black text-xl">ЗАМОВИТИ</button>
             </div>
         </div>
     </div>
@@ -110,43 +85,126 @@
         let cart = JSON.parse(localStorage.getItem('trend_cart') || '{}');
         let currentCat = 'all';
 
-        // ТВОЇ ДАНІ ТЕЛЕГРАМ
-        const botToken = '6918546766:AAEWLatU6fz6ITX8OI81Hd6nrMc-jE8u5cU';
-        const chatId = '1246930818';
-
         async function init() {
             try {
                 const res = await fetch('data.csv?v=' + Date.now());
                 const text = await res.text();
-                const lines = text.split(/\r?\n/).filter(l => l.trim() !== "");
+                const lines = text.split(/\r?\n/).filter(l => l.trim().length > 5);
                 
                 products = lines.slice(1).map(line => {
-                    const parts = line.split(',');
-                    if (parts.length < 2) return null;
-                    const sku = parts[0].trim();
-                    const rawPrice = parseFloat(parts[parts.length - 1]);
-                    const name = parts.slice(1, -1).join(', ').replace(/"/g, '').trim();
-                    
-                    if (!sku || isNaN(rawPrice)) return null;
+                    try {
+                        const parts = line.split(',');
+                        if (parts.length < 2) return null;
+                        
+                        const sku = parts[0].replace(/"/g, '').trim();
+                        const rawPrice = parseFloat(parts[parts.length - 1]);
+                        const name = parts.slice(1, -1).join(', ').replace(/"/g, '').trim();
+                        
+                        if (!sku || isNaN(rawPrice)) return null;
 
-                    return { 
-                        sku, 
-                        name, 
-                        price: Math.round(rawPrice * 1.5), // Націнка +50%
-                        cat: detectCat(name) 
-                    };
+                        return { 
+                            sku, name, 
+                            price: Math.round(rawPrice * 1.5), 
+                            cat: detectCat(name) 
+                        };
+                    } catch(e) { return null; }
                 }).filter(p => p !== null);
 
                 document.getElementById('loading').classList.add('hidden');
                 document.getElementById('admin-count').innerText = products.length;
                 render();
-            } catch (e) { 
-                document.getElementById('loading').innerHTML = `<p class="text-red-500 font-bold uppercase tracking-widest">Помилка прайсу!</p>`;
-            }
+            } catch (e) { console.error(e); }
         }
 
         function detectCat(name) {
             const n = name.toLowerCase();
-            if (n.includes('лампа') || n.includes('світло') || n.includes('led') || n.includes('прож')) return 'Освітлення';
-            if (n.includes('кабел') || n.includes('провід') || n.includes('пвс') || n.includes('ввг')) return 'Кабель';
-            if (n.includes('розетк') || n.includes('
+            if (n.includes('лампа') || n.includes('led') || n.includes('світл')) return 'Освітлення';
+            if (n.includes('кабел') || n.includes('провід') || n.includes('ввг')) return 'Кабель';
+            if (n.includes('розетк') || n.includes('вимик')) return 'Розетки';
+            if (n.includes('автомат') || n.includes('пзв') || n.includes('реле')) return 'Автоматика';
+            return 'Інше';
+        }
+
+        function render() {
+            const list = document.getElementById('product-list');
+            const term = document.getElementById('search').value.toLowerCase();
+            
+            const filtered = products.filter(p => {
+                const matchSearch = p.name.toLowerCase().includes(term) || p.sku.toLowerCase().includes(term);
+                const matchCat = currentCat === 'all' || p.cat === currentCat;
+                return matchSearch && matchCat;
+            });
+
+            list.innerHTML = filtered.map(p => `
+                <div class="product-card p-4 flex flex-col gap-3">
+                    <div class="bg-white rounded-2xl aspect-square flex items-center justify-center overflow-hidden">
+                        <img src="img/${p.sku}.jpg" onerror="this.src='https://via.placeholder.com/300x300?text=Trend+Electro'" class="w-full h-full object-contain p-2">
+                    </div>
+                    <div class="flex-grow">
+                        <span class="text-[9px] opacity-40 font-bold uppercase">${p.sku}</span>
+                        <h3 class="font-bold text-sm leading-tight line-clamp-2 h-10 text-white">${p.name}</h3>
+                    </div>
+                    <div class="flex justify-between items-center bg-white/5 p-2 rounded-xl">
+                        <span class="text-xl font-black text-yellow-500">${p.price} <small class="text-[10px]">грн</small></span>
+                        <div class="flex items-center gap-2">
+                            <button onclick="updateCart('${p.sku}', -1)" class="w-8 h-8 rounded-lg bg-white/10 text-white">-</button>
+                            <span class="font-bold text-white w-4 text-center">${cart[p.sku] || 0}</span>
+                            <button onclick="updateCart('${p.sku}', 1)" class="w-8 h-8 bg-yellow-500 text-black rounded-lg font-bold">+</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            document.getElementById('cart-count').innerText = Object.values(cart).reduce((a,b) => a+b, 0);
+        }
+
+        function updateCart(sku, delta) {
+            cart[sku] = (cart[sku] || 0) + delta;
+            if (cart[sku] <= 0) delete cart[sku];
+            localStorage.setItem('trend_cart', JSON.stringify(cart));
+            render();
+            updateCartUI();
+        }
+
+        function updateCartUI() {
+            const container = document.getElementById('cart-items');
+            let total = 0;
+            container.innerHTML = '';
+            for (let sku in cart) {
+                const p = products.find(i => i.sku === sku);
+                if (!p) continue;
+                total += p.price * cart[sku];
+                container.innerHTML += `<div class="flex items-center gap-3 bg-white/5 p-3 rounded-xl border border-white/5 text-white">
+                    <img src="img/${p.sku}.jpg" class="w-12 h-12 rounded-lg bg-white p-1" onerror="this.src='https://via.placeholder.com/50?text=TE'">
+                    <div class="flex-grow text-[12px]"><p class="font-bold">${p.name}</p> <p class="text-yellow-500">${cart[sku]} шт.</p></div>
+                    <p class="font-bold">${p.price * cart[sku]} грн</p>
+                </div>`;
+            }
+            document.getElementById('final-price').innerText = total + " грн";
+        }
+
+        async function checkout() {
+            if(Object.keys(cart).length === 0) return;
+            let msg = `🛒 ЗАМОВЛЕННЯ TREND ELECTRO\n\n`;
+            for (let sku in cart) {
+                const p = products.find(i => i.sku === sku);
+                msg += `▪️ ${p.name} (${cart[sku]} шт) = ${p.price * cart[sku]} грн\n`;
+            }
+            msg += `\n💰 РАЗОМ: ${document.getElementById('final-price').innerText}`;
+            await fetch(`https://api.telegram.org/bot6918546766:AAEWLatU6fz6ITX8OI81Hd6nrMc-jE8u5cU/sendMessage?chat_id=1246930818&text=${encodeURIComponent(msg)}`);
+            alert("Надіслано!"); cart = {}; localStorage.clear(); location.reload();
+        }
+
+        function toggleTheme() { document.body.classList.toggle('light-mode'); }
+        function loginAdmin() { if(prompt("Пароль:") === "admin123") document.getElementById('admin-panel').classList.remove('hidden'); }
+        function toggleCart() { document.getElementById('cart-modal').classList.toggle('hidden'); updateCartUI(); }
+        function filterCat(cat, btn) { 
+            currentCat = cat; 
+            document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            render(); 
+        }
+        document.getElementById('search').oninput = render;
+        window.onload = init;
+    </script>
+</body>
+</html>
