@@ -14,10 +14,6 @@
         .category-btn { background: rgba(255,255,255,0.05); color: white; border-radius: 99px; padding: 12px 24px; white-space: nowrap; transition: 0.3s; font-size: 14px; font-weight: 700; border: 1px solid rgba(255,255,255,0.1); }
         .category-btn.active { background: var(--accent) !important; color: #000 !important; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        
-        #wheel-container { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 200; align-items: center; justify-content: center; backdrop-filter: blur(10px); }
-        .wheel { width: 300px; height: 300px; border-radius: 50%; border: 10px solid var(--accent); position: relative; transition: 4s cubic-bezier(0.1, 0, 0, 1); overflow: hidden; }
-        .wheel-part { position: absolute; width: 50%; height: 50%; transform-origin: 100% 100%; display: flex; align-items: center; justify-content: center; font-weight: 900; color: #000; }
     </style>
 </head>
 <body class="font-sans">
@@ -40,7 +36,7 @@
  
     <main class="container mx-auto px-4 pb-20">
         <div class="mt-8 mb-10 relative">
-            <input type="text" id="search" placeholder="Що шукаємо сьогодні? (назва або артикул)" 
+            <input type="text" id="search" placeholder="Що шукаємо сьогодні?" 
                 class="w-full p-6 pl-16 rounded-[2rem] bg-white/5 border border-white/10 focus:ring-4 focus:ring-yellow-500/20 outline-none text-xl transition-all">
             <i class="fas fa-search absolute left-6 top-7 text-yellow-500 text-xl"></i>
         </div>
@@ -55,14 +51,14 @@
         </div>
  
         <div id="admin-panel" class="hidden bg-gradient-to-br from-yellow-500/20 to-orange-500/5 border-2 border-yellow-500/50 p-8 rounded-[3rem] mb-12">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div>
                     <h3 class="font-black text-yellow-500 uppercase mb-4 tracking-widest">📈 Націнка</h3>
-                    <input type="number" id="markup" value="1.5" step="0.1" onchange="updateSettings()" class="w-full bg-black/40 p-3 rounded-xl mt-1 border border-white/10">
+                    <input type="number" id="markup" step="0.1" onchange="updateSettings()" class="w-full bg-black/40 p-3 rounded-xl border border-white/10">
                 </div>
                 <div>
                     <h3 class="font-black text-yellow-500 uppercase mb-4 tracking-widest">📉 Знижка (%)</h3>
-                    <input type="number" id="global-discount" value="0" onchange="updateSettings()" class="w-full bg-black/40 p-3 rounded-xl mt-1 border border-white/10">
+                    <input type="number" id="global-discount" onchange="updateSettings()" class="w-full bg-black/40 p-3 rounded-xl border border-white/10">
                 </div>
             </div>
         </div>
@@ -83,4 +79,126 @@
                     <span class="text-sm font-bold opacity-40 uppercase">Разом:</span>
                     <span id="final-price" class="text-5xl font-black text-yellow-500">0 грн</span>
                 </div>
-                <button onclick="checkout()" class="w-full bg-yellow-500 text-black py-6 rounded-[2rem
+                <button onclick="checkout()" class="w-full bg-yellow-500 text-black py-6 rounded-[2rem] font-black text-2xl uppercase italic">Оформити замовлення</button>
+            </div>
+        </div>
+    </div>
+ 
+    <script>
+        let products = [];
+        let cart = JSON.parse(localStorage.getItem('trend_cart') || '{}');
+        let settings = JSON.parse(localStorage.getItem('trend_settings') || '{"discount": 0, "markup": 1.5}');
+        let currentCat = 'all';
+ 
+        async function init() {
+            try {
+                const res = await fetch('data.csv?v=' + Date.now());
+                const text = await res.text();
+                const lines = text.split('\n');
+                
+                products = lines.slice(1).map(line => {
+                    const parts = line.split(',');
+                    if (parts.length < 3) return null;
+                    const sku = parts[0].trim();
+                    const rawPrice = parseFloat(parts[parts.length - 1]);
+                    const name = parts.slice(1, -1).join(',').replace(/"/g, '').trim();
+                    
+                    let price = Math.round(rawPrice * settings.markup);
+                    if (settings.discount > 0) price = Math.round(price * (1 - settings.discount / 100));
+ 
+                    return { sku, name, price, cat: detectCat(name) };
+                }).filter(p => p !== null);
+ 
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('global-discount').value = settings.discount;
+                document.getElementById('markup').value = settings.markup;
+                render();
+            } catch (e) { console.error(e); }
+        }
+ 
+        function detectCat(name) {
+            const n = name.toLowerCase();
+            if (n.includes('лампа') || n.includes('led')) return 'Освітлення';
+            if (n.includes('кабель') || n.includes('провід')) return 'Кабель та Провід';
+            if (n.includes('розетка')) return 'Розетки та Вимикачі';
+            if (n.includes('автомат')) return 'Модульна автоматика';
+            return 'Інше';
+        }
+ 
+        function render() {
+            const list = document.getElementById('product-list');
+            const term = document.getElementById('search').value.toLowerCase();
+            const filtered = products.filter(p => (p.name.toLowerCase().includes(term) || p.sku.toLowerCase().includes(term)) && (currentCat === 'all' || p.cat === currentCat));
+ 
+            list.innerHTML = filtered.map(p => `
+                <div class="product-card p-6 flex flex-col gap-6">
+                    <img src="img/${p.sku}.jpg" onerror="this.src='https://via.placeholder.com/200'" class="w-full aspect-square object-contain bg-white rounded-xl p-2">
+                    <h3 class="font-bold h-12 line-clamp-2">${p.name}</h3>
+                    <div class="flex justify-between items-center">
+                        <span class="text-xl font-black text-yellow-500">${p.price} грн</span>
+                        <div class="flex items-center gap-2">
+                            <button onclick="updateCart('${p.sku}', -1)" class="w-8 h-8 bg-white/10 rounded-full">-</button>
+                            <span>${cart[p.sku] || 0}</span>
+                            <button onclick="updateCart('${p.sku}', 1)" class="w-10 h-10 bg-yellow-500 text-black rounded-lg font-bold">+</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            document.getElementById('cart-count').innerText = Object.values(cart).reduce((a,b) => a+b, 0);
+        }
+ 
+        function updateCart(sku, d) {
+            cart[sku] = (cart[sku] || 0) + d;
+            if (cart[sku] <= 0) delete cart[sku];
+            localStorage.setItem('trend_cart', JSON.stringify(cart));
+            render();
+            updateCartUI();
+        }
+ 
+        function updateCartUI() {
+            const cont = document.getElementById('cart-items');
+            let total = 0; cont.innerHTML = '';
+            for (let sku in cart) {
+                const p = products.find(i => i.sku === sku);
+                if (!p) continue;
+                total += p.price * cart[sku];
+                cont.innerHTML += `<div class="flex justify-between bg-white/5 p-4 rounded-xl">
+                    <span>${p.name} x ${cart[sku]}</span>
+                    <span>${p.price * cart[sku]} грн</span>
+                </div>`;
+            }
+            document.getElementById('final-price').innerText = total + " грн";
+        }
+ 
+        async function checkout() {
+            if(Object.keys(cart).length === 0) return;
+            const phone = prompt("Введіть ваш номер телефону:"); // ДОДАНО ПИТАННЯ ТЕЛЕФОНУ
+            if(!phone) return;
+
+            let msg = `🛒 ЗАМОВЛЕННЯ ТЕЛ: ${phone}\n\n`;
+            for (let sku in cart) {
+                const p = products.find(i => i.sku === sku);
+                msg += `${p.name} - ${cart[sku]} шт.\n`;
+            }
+            msg += `\nРАЗОМ: ${document.getElementById('final-price').innerText}`;
+            
+            await fetch(`https://api.telegram.org/bot6918546766:AAEWLatU6fz6ITX8OI81Hd6nrMc-jE8u5cU/sendMessage?chat_id=1246930818&text=${encodeURIComponent(msg)}`);
+            alert("Замовлення надіслано!");
+            cart = {}; localStorage.removeItem('trend_cart'); location.reload();
+        }
+ 
+        function filterCat(cat, btn) {
+            currentCat = cat;
+            document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            render();
+        }
+ 
+        function updateSettings() {
+            settings.discount = document.getElementById('global-discount').value;
+            settings.markup = document.getElementById('markup').value;
+            localStorage.setItem('trend_settings', JSON.stringify(settings));
+            init(); 
+        }
+ 
+        function loginAdmin() { if(prompt("Паро
