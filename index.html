@@ -133,7 +133,7 @@
             const phone = prompt("Введіть ваш номер телефону:");
             if(!phone) return;
             
-            let msg = `🛍️ ЗАМОВЛЕННЯ ТЕЛ: ${phone}\n\n`;
+            let msg = `🛒 ЗАМОВЛЕННЯ ТЕЛ: ${phone}\n\n`;
             for (let sku in cart) {
                 const p = products.find(i => i.sku === sku);
                 msg += `${p.name} - ${cart[sku]} шт.\n`;
