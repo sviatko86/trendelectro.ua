@@ -32,4 +32,50 @@
                 <button onclick="loginAdmin()" class="bg-white/5 w-12 h-12 rounded-full hover:bg-white/10 transition"><i class="fas fa-user-shield text-yellow-500"></i></button>
                 <button onclick="toggleCart()" class="relative bg-white/5 w-12 h-12 rounded-full hover:bg-white/10 transition">
                     <i class="fas fa-shopping-cart text-white"></i>
-                    <span id="cart-count" class="absolute -top-1 -right-1 bg-red-600 text-[10px] w-6 h-6 flex items-center justify-center rounded-full font-black border-2
+                    <span id="cart-count" class="absolute -top-1 -right-1 bg-red-600 text-[10px] w-6 h-6 flex items-center justify-center rounded-full font-black border-2 border-[#0f172a]">0</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 pb-20">
+        <div class="mt-8 mb-10 relative">
+            <input type="text" id="search" placeholder="Що шукаємо сьогодні?" 
+                class="w-full p-6 pl-16 rounded-[2rem] bg-white/5 border border-white/10 focus:ring-4 focus:ring-yellow-500/20 outline-none text-xl transition-all">
+            <i class="fas fa-search absolute left-6 top-7 text-yellow-500 text-xl"></i>
+        </div>
+
+        <div class="flex gap-3 overflow-x-auto pb-10 no-scrollbar">
+            <button onclick="filterCat('all', this)" class="category-btn active">⚡️ ВСЕ</button>
+            <button onclick="filterCat('Освітлення', this)" class="category-btn">💡 СВІТЛО</button>
+            <button onclick="filterCat('Кабель та Провід', this)" class="category-btn">🔌 КАБЕЛЬ</button>
+            <button onclick="filterCat('Розетки та Вимикачі', this)" class="category-btn">🎛️ РОЗЕТКИ</button>
+            <button onclick="filterCat('Модульна автоматика', this)" class="category-btn">🛡️ АВТОМАТИКА</button>
+            <button onclick="filterCat('Щити та бокси', this)" class="category-btn">📦 ЩИТИ</button>
+        </div>
+
+        <div id="admin-panel" class="hidden bg-gradient-to-br from-yellow-500/20 to-orange-500/5 border-2 border-yellow-500/50 p-8 rounded-[3rem] mb-12">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div>
+                    <h3 class="font-black text-yellow-500 uppercase mb-4 tracking-widest">📉 Знижка (%)</h3>
+                    <input type="number" id="global-discount" onchange="updateSettings()" class="w-full bg-black/40 p-3 rounded-xl border border-white/10">
+                </div>
+                <div>
+                    <h3 class="font-black text-yellow-500 uppercase mb-4 tracking-widest">📈 Націнка</h3>
+                    <input type="number" id="markup" step="0.1" onchange="updateSettings()" class="w-full bg-black/40 p-3 rounded-xl border border-white/10">
+                </div>
+                <div class="flex flex-col justify-end">
+                    <button onclick="localStorage.clear(); location.reload();" class="bg-red-500 text-white p-3 rounded-xl font-bold">Скинути ВСЕ</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="loading" class="py-20 text-center"><i class="fas fa-circle-notch fa-spin text-4xl text-yellow-500"></i></div>
+        <div id="product-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"></div>
+    </main>
+
+    <div id="wheel-container">
+        <div class="text-center bg-gray-900 p-10 rounded-[3rem] border border-yellow-500/30 relative">
+            <h2 class="text-3xl font-black text-yellow-500 mb-2 italic">LUCKY WHEEL</h2>
+            <div class="wheel mx-auto my-8" id="main-wheel">
+                <div class="wheel-part bg-
